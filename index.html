@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HandiCalc</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="/images/favicon.png">  
+</head>
+<body>
+  <!-- Splash screen shown during initialization (outside app to avoid stacking issues) -->
+  <div id="splash" class="splash-overlay" role="dialog" aria-modal="true" aria-label="HandiCalc is loading">
+    <div class="splash-card">
+      <img class="splash-logo" src="images/handicalc.png" alt="HandiCalc logo" />
+      <div class="splash-brand">HandiCalc</div>
+    </div>
+  </div>
+
+  <div id="app" class="app" role="application" aria-label="HandiCalc">
+    <main id="pages" class="pages" tabindex="-1">
+      <!-- Home Page -->
+      <section id="home" class="page">
+
+        <div class="group">
+          <div class="section-header">
+            <label class="group-title" for="club-search">Club name:</label>
+            <button class="help-btn" data-help="" aria-label="Help with club selection">
+              <img src="images/help.png" alt="Help" />
+            </button>
+          </div>
+          <div class="input-with-icon">
+            <img src="images/search.png" alt="" class="leading-icon" />
+            <input id="club-search" tabindex=-1 type="text" placeholder="Type club name" inputmode="search" />
+            <button id="club-clear" class="clear-btn" type="button" aria-label="Clear course" title="Clear"></button>
+            <div id="club-suggest" class="suggest-box" hidden></div>
+          </div>
+          <div class="row head course-select-row" style="margin-top: 8px; align-items: center;">
+            <label for="home-course-list" class="inline-label">Course:</label>
+            <select id="home-course-list" tabindex=-1 aria-label="Courses"></select>
+          </div>
+        </div>
+
+        <div class="group tees">
+          <div class="row head">
+            <label class="group-title">Tees:</label>
+            <div class="spacer"></div>
+            <div class="col-head">Men</div>
+            <div class="col-head">Ladies</div>
+          </div>
+
+          <table class="tees-table" role="presentation">
+            <colgroup>
+              <col class="col-label" />
+              <col class="col-men" />
+              <col class="col-ladies" />
+            </colgroup>
+            <tbody>
+              <tr class="selects">
+                <td class="label"></td>
+                <td>
+                  <select id="men-tee" tabindex=-1 aria-label="Men Tee"></select>
+                </td>
+                <td>
+                  <select id="ladies-tee" tabindex=-1 aria-label="Ladies Tee"></select>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Slope:</td>
+                <td id="men-slope" class="num" data-align-numeric></td>
+                <td id="ladies-slope" class="num" data-align-numeric></td>
+              </tr>
+              <tr>
+                <td class="label">Course Rating:</td>
+                <td id="men-rating" class="num" data-align-numeric></td>
+                <td id="ladies-rating" class="num" data-align-numeric></td>
+              </tr>
+              <tr>
+                <td class="label">Par:</td>
+                <td id="men-par" class="num" data-align-numeric></td>
+                <td id="ladies-par" class="num" data-align-numeric></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="group inline format-group">
+          <label class="group-title inline-label" for="format">Format:</label>
+          <select id="format" tabindex=-1 class="format-select">
+            <option>General play</option>
+            <option>Individual</option>
+            <option>4B better-ball</option>
+            <option>Foursomes</option>
+            <option>Greensomes</option>
+            <option>2B match-play</option>
+            <option>4B match-play</option>
+            <option>Foursomes match-play</option>
+          </select>
+        </div>
+        <div id="format-helper" class="helper italic format-helper">100% course handicap</div>
+
+        <div class="group players">
+          <label class="group-title">Players:</label>
+          <table class="players-table" role="presentation">
+            <colgroup>
+              <col class="col-player" />
+              <col class="col-hi" />
+              <col class="col-ph" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>HI</th>
+                <th>PH</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <select tabindex=-1 tabindex=-1 aria-label="Player 1">
+                    <option></option>
+                  </select>
+                </td>
+                <td>
+                  <input class="hi-input" tabindex=1 type="number" inputmode="decimal" step="0.1" aria-label="HI 1" />
+                </td>
+                <td>
+                  <span class="ph-value bold" aria-label="PH 1">20</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <select tabindex=-1 aria-label="Player 2">
+                    <option></option>
+                  </select>
+                </td>
+                <td>
+                  <input class="hi-input" tabindex=2 type="number" inputmode="decimal" step="0.1" aria-label="HI 2" />
+                </td>
+                <td>
+                  <span class="ph-value bold" aria-label="PH 2"></span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <select tabindex=-1 aria-label="Player 3">
+                    <option></option>
+                  </select>
+                </td>
+                <td>
+                  <input class="hi-input" tabindex=3 type="number" inputmode="decimal" step="0.1" aria-label="HI 3" />
+                </td>
+                <td>
+                  <span class="ph-value bold" aria-label="PH 3"></span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <select tabindex=-1 aria-label="Player 4">
+                    <option></option>
+                  </select>
+                </td>
+                <td>
+                  <input class="hi-input" tabindex=4 type="number" inputmode="decimal" step="0.1" aria-label="HI 4" />
+                </td>
+                <td>
+                  <span class="ph-value bold" aria-label="PH 4"></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Players Page -->
+      <section id="players" class="page" hidden>
+        <div class="group">
+          <div class="section-header">
+            <h2 class="group-title">Players</h2>
+            <button class="help-btn" data-help="players" aria-label="Help with players">
+              <img src="images/help.png" alt="Help" />
+            </button>
+          </div>
+          <table class="players-mgmt-table" role="presentation">
+            <colgroup>
+              <col class="col-name" />
+              <col class="col-gender" />
+              <col class="col-hi" />
+              <col class="col-add" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>M/F</th>
+                <th>HI</th>
+                <th class="icon-cell"><img id="players-add" src="images/plus.png" alt="Add" /></th>
+              </tr>
+            </thead>
+            <tbody id="players-tbody">
+              <!-- 20 static rows, initially hidden -->
+              <tr id="player-row-0" data-index="0" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="1" aria-label="Player 1 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 1 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="2" aria-label="Player 1 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <!-- Rows 2-19 follow the same pattern with incremented tabindex values -->
+              <tr id="player-row-1" data-index="1" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="3" aria-label="Player 2 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 2 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="4" aria-label="Player 2 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-2" data-index="2" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="5" aria-label="Player 3 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 3 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="6" aria-label="Player 3 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-3" data-index="3" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="7" aria-label="Player 4 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 4 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="8" aria-label="Player 4 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-4" data-index="4" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="9" aria-label="Player 5 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 5 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="10" aria-label="Player 5 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-5" data-index="5" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="11" aria-label="Player 6 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 6 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="12" aria-label="Player 6 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-6" data-index="6" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="13" aria-label="Player 7 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 7 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="14" aria-label="Player 7 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-7" data-index="7" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="15" aria-label="Player 8 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 8 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="16" aria-label="Player 8 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-8" data-index="8" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="17" aria-label="Player 9 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 9 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="18" aria-label="Player 9 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-9" data-index="9" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="19" aria-label="Player 10 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 10 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="20" aria-label="Player 10 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-10" data-index="10" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="21" aria-label="Player 11 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 11 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="22" aria-label="Player 11 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-11" data-index="11" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="23" aria-label="Player 12 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 12 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="24" aria-label="Player 12 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-12" data-index="12" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="25" aria-label="Player 13 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 13 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="26" aria-label="Player 13 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-13" data-index="13" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="27" aria-label="Player 14 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 14 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="28" aria-label="Player 14 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-14" data-index="14" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="29" aria-label="Player 15 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 15 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="30" aria-label="Player 15 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-15" data-index="15" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="31" aria-label="Player 16 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 16 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="32" aria-label="Player 16 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-16" data-index="16" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="33" aria-label="Player 17 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 17 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="34" aria-label="Player 17 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-17" data-index="17" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="35" aria-label="Player 18 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 18 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="36" aria-label="Player 18 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-18" data-index="18" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="37" aria-label="Player 19 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 19 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="38" aria-label="Player 19 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+              <tr id="player-row-19" data-index="19" style="display: none;">
+                <td><input type="text" class="player-name" tabindex="39" aria-label="Player 20 name" data-field="name" /></td>
+                <td><select class="player-gender" tabindex="-1" aria-label="Player 20 gender" data-field="gender">
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select></td>
+                <td><input type="number" class="player-hi" inputmode="decimal" step="0.1" tabindex="40" aria-label="Player 20 HI" data-field="hi" /></td>
+                <td class="icon-cell"><img class="players-remove" src="images/minus.png" alt="Remove" data-action="remove" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Courses Page -->
+      <section id="courses" class="page" hidden>
+        <div class="group">
+          <div class="section-header">
+            <h2 class="group-title">Courses</h2>
+            <button class="help-btn" data-help="courses" aria-label="Help with courses">
+              <img src="images/help.png" alt="Help" />
+            </button>
+          </div>
+
+        <!-- Club select -->
+        <div class="group">
+          <label class="group-title" for="club-name">Club name:</label>
+          <select id="club-name"></select>
+        </div>
+
+        <!-- Courses table -->
+        <div class="group">
+          <div class="table-container scroll-3">
+          <table class="courses-table" role="presentation">
+            <colgroup>
+              <col class="col-select" />
+              <col class="col-name" />
+              <col class="col-actions" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th></th>
+                <th class="text-left">Courses:</th>
+                <th class="icon-cell"><img id="courses-add" src="images/plus.png" alt="Add" /></th>
+              </tr>
+            </thead>
+            <tbody id="courses-tbody">
+              <!-- 5 static rows, initially hidden -->
+              <tr id="course-row-0" data-index="0" style="display: none;">
+                <td><input type="radio" name="course-select" tabindex="-1" aria-label="Select course 1" /></td>
+                <td><input type="text" class="course-name" tabindex="1" aria-label="Course 1 name" data-field="name" /></td>
+                <td class="icon-cell">
+                  <img class="courses-remove" src="images/minus.png" alt="Remove" tabindex="-1" />
+                </td>
+              </tr>
+              <tr id="course-row-1" data-index="1" style="display: none;">
+                <td><input type="radio" name="course-select" tabindex="-1" aria-label="Select course 2" /></td>
+                <td><input type="text" class="course-name" tabindex="2" aria-label="Course 2 name" data-field="name" /></td>
+                <td class="icon-cell">
+                  <img class="courses-remove" src="images/minus.png" alt="Remove" tabindex="-1" />
+                </td>
+              </tr>
+              <tr id="course-row-2" data-index="2" style="display: none;">
+                <td><input type="radio" name="course-select" tabindex="-1" aria-label="Select course 3" /></td>
+                <td><input type="text" class="course-name" tabindex="3" aria-label="Course 3 name" data-field="name" /></td>
+                <td class="icon-cell">
+                  <img class="courses-remove" src="images/minus.png" alt="Remove" tabindex="-1" />
+                </td>
+              </tr>
+              <tr id="course-row-3" data-index="3" style="display: none;">
+                <td><input type="radio" name="course-select" tabindex="-1" aria-label="Select course 4" /></td>
+                <td><input type="text" class="course-name" tabindex="4" aria-label="Course 4 name" data-field="name" /></td>
+                <td class="icon-cell">
+                  <img class="courses-remove" src="images/minus.png" alt="Remove" tabindex="-1" />
+                </td>
+              </tr>
+              <tr id="course-row-4" data-index="4" style="display: none;">
+                <td><input type="radio" name="course-select" tabindex="-1" aria-label="Select course 5" /></td>
+                <td><input type="text" class="course-name" tabindex="5" aria-label="Course 5 name" data-field="name" /></td>
+                <td class="icon-cell">
+                  <img class="courses-remove" src="images/minus.png" alt="Remove" tabindex="-1" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+
+        <!-- Tees gender choice -->
+        <div class="group tees-start">
+          <div class="row head">
+            <label class="group-title">Tees</label>
+            <div class="spacer"></div>
+            <div class="gender-choice" role="radiogroup" aria-label="Gender">
+              <label><input type="radio" name="courses-gender" value="M" checked> Male</label>
+              <label><input type="radio" name="courses-gender" value="F"> Female</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tees table -->
+        <div class="group">
+          <div class="table-container scroll-4">
+          <table class="tees-mgmt-table" role="presentation">
+            <colgroup>
+              <col class="col-name" />
+              <col class="col-slope" />
+              <col class="col-cr" />
+              <col class="col-par" />
+              <col class="col-add" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slope</th>
+                <th>CR</th>
+                <th>Par</th>
+                <th class="icon-cell"><img id="tees-add" src="images/plus.png" alt="Add" /></th>
+              </tr>
+            </thead>
+            <tbody id="tees-tbody">
+              <!-- 10 static rows, initially hidden -->
+              <tr id="tee-row-0" data-index="0" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="6" aria-label="Tee 1 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="7" aria-label="Tee 1 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="8" aria-label="Tee 1 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="9" aria-label="Tee 1 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-1" data-index="1" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="10" aria-label="Tee 2 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="11" aria-label="Tee 2 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="12" aria-label="Tee 2 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="13" aria-label="Tee 2 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-2" data-index="2" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="14" aria-label="Tee 3 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="15" aria-label="Tee 3 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="16" aria-label="Tee 3 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="17" aria-label="Tee 3 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-3" data-index="3" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="18" aria-label="Tee 4 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="19" aria-label="Tee 4 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="20" aria-label="Tee 4 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="21" aria-label="Tee 4 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-4" data-index="4" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="22" aria-label="Tee 5 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="23" aria-label="Tee 5 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="24" aria-label="Tee 5 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="25" aria-label="Tee 5 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-5" data-index="5" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="26" aria-label="Tee 6 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="27" aria-label="Tee 6 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="28" aria-label="Tee 6 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="29" aria-label="Tee 6 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-6" data-index="6" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="30" aria-label="Tee 7 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="31" aria-label="Tee 7 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="32" aria-label="Tee 7 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="33" aria-label="Tee 7 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-7" data-index="7" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="34" aria-label="Tee 8 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="35" aria-label="Tee 8 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="36" aria-label="Tee 8 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="37" aria-label="Tee 8 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-8" data-index="8" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="38" aria-label="Tee 9 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="39" aria-label="Tee 9 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="40" aria-label="Tee 9 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="41" aria-label="Tee 9 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+              <tr id="tee-row-9" data-index="9" style="display: none;">
+                <td><input type="text" class="tee-name" tabindex="42" aria-label="Tee 10 name" data-field="name" /></td>
+                <td><input type="number" class="tee-slope" tabindex="43" aria-label="Tee 10 slope" data-field="slope" min="55" max="155" step="1" /></td>
+                <td><input type="number" class="tee-cr" tabindex="44" aria-label="Tee 10 course rating" data-field="cr" min="55" max="80" step="0.1" /></td>
+                <td><input type="number" class="tee-par" tabindex="45" aria-label="Tee 10 par" data-field="par" min="54" max="72" step="1" /></td>
+                <td class="icon-cell"><img class="tees-remove" src="images/minus.png" alt="Remove" tabindex="-1" /></td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn primary btn-sm" type="button">New</button>
+          <button class="btn primary btn-sm" type="button" disabled>Delete</button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Primary">
+      <button class="tab" data-target="home" aria-label="Home">
+        <img src="images/home.png" alt="" />
+        <span>Home</span>
+      </button>
+      <button class="tab" data-target="players" aria-label="Players">
+        <img src="images/players.png" alt="" />
+        <span>Players</span>
+      </button>
+      <button class="tab" data-target="courses" aria-label="Courses">
+        <img src="images/courses.png" alt="" />
+        <span>Courses</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- New Club Modal -->
+  <div id="new-club-modal" class="modal" hidden>
+    <div class="modal-content">
+      <h2>New Golf Club</h2>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="club-name-input">Club Name:</label>
+          <input type="text" id="club-name-input" class="modal-input" placeholder="Enter club name" autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="add-club" class="btn primary" disabled>Add</button>
+        <button id="cancel-club" class="btn secondary">Cancel</button>
+      </div>
+      <div id="club-error" class="error-message" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

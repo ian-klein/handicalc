@@ -1,0 +1,590 @@
+// Functions relevant for the Home page
+'use strict';
+
+import { getCourse, findClubs, getCoursesForClub } from "./course-data.js";  
+import { clearNode, optionFor } from "./uilib.js"
+import { getPlayer, getPlayers } from "./players.js";
+import { computeCH, calculatePH } from "./handicap.js";
+
+// Local storage key for the home state
+const HOME_STORAGE_KEY = 'home_state_v1';
+
+// DOM elements
+const clubInput = document.getElementById('club-search');
+const clubSuggest = document.getElementById('club-suggest');
+const clubClear = document.getElementById('club-clear');
+const homeCourseSel = document.getElementById('home-course-list');
+const menTeeSel = document.getElementById('men-tee');
+const ladiesTeeSel = document.getElementById('ladies-tee');
+const menSlope = document.getElementById('men-slope');
+const ladiesSlope = document.getElementById('ladies-slope');
+const menRating = document.getElementById('men-rating');
+const ladiesRating = document.getElementById('ladies-rating');
+const menPar = document.getElementById('men-par');
+const ladiesPar = document.getElementById('ladies-par');
+const formatSelect = document.getElementById('format');
+const formatHelper = document.getElementById('format-helper');
+
+
+// Class that encapsulates the Home page state
+class HomeState {
+    constructor() {
+        this.format = 'General play';
+        this.courseText = null;
+        this.selectedClub = null;
+        this.selectedCourseId = null;
+        this.menTee = null;
+        this.ladiesTee = null;
+        this.players = [];
+    }
+}
+
+// The Home page state - saved and loaded from local storage
+let homeState = new HomeState();
+
+const formatText = {
+  'General play': 'Each player gets 100% of their course handicap',
+  'Individual': 'Each player gets 95% of their course handicap',
+  '4B better-ball': 'Each player gets 85% of their course handicap',
+  'Foursomes': 'Team handicap is the sum of 50% of the course handicap for each player',
+  'Greensomes': 'Team handicap is the sum of 60% course handicap for the lower plus 40% course handicap for the higher',
+  '2B match-play': 'The highest handicapped player gets 100% of the difference in course handicaps',
+  '4B match-play': 'Each player gets 90% of the difference between their course handicap and the course handicap of the lowest handicapped player',
+  'Foursomes match-play': 'Team handicap is 50% of the difference in the sum of the course handicaps for each player in the team'
+};
+
+export function wireHomeEvents() {
+  // Club search
+  clubInput.addEventListener('input', onClubInput_Input);
+  clubInput.addEventListener('change', onClubInput_Change);
+  clubClear.addEventListener('click', onClubClear_Click);
+  clubSuggest.addEventListener('mousedown', (e) => { onClubSuggest_Mousedown(e); });
+
+  // If the suggest box is shown and the user clicks outside of it, hide it
+  document.addEventListener('click', (e) => {
+    if (!clubSuggest.contains(e.target) && e.target !== clubInput) {
+      clubSuggest.hidden = true;
+    }
+  });
+
+  // Format
+  formatSelect.addEventListener('change', onFormatSelect_Change);
+
+  // Courses
+  homeCourseSel.addEventListener('change', onHomeCourseSel_Change);
+
+  // Tees
+  menTeeSel.addEventListener('change', onMenTeeSel_Change);
+  ladiesTeeSel.addEventListener('change', onLadiesTeeSel_Change);
+
+  // Players
+  const rows = getHomePlayerRows();
+  for (const row of rows) {
+    row.select.addEventListener('change', (e) => { onPlayerSel_Change(e); });
+    row.hiInput.addEventListener('change', onPlayerHiInput_Change);
+  }
+}
+
+function saveHomeState() {
+    try {
+      homeState.format = formatSelect ? formatSelect.value : 'General play';
+      homeState.courseText = null; //Defunct, but maintained for backward compatibility
+      homeState.selectedClub = clubInput.value;
+      homeState.selectedCourseId = homeCourseSel.value;
+      homeState.menTee = menTeeSel.value
+      homeState.ladiesTee = ladiesTeeSel.value;
+      homeState.players = getHomePlayers();;
+
+      localStorage.setItem(HOME_STORAGE_KEY, JSON.stringify(homeState));
+    } catch (err) {
+      console.warn('Failed to save home state', err);
+    }
+}
+
+export function loadHomeState() {
+    try {
+        const raw = localStorage.getItem(HOME_STORAGE_KEY);
+        if (raw) {
+            homeState = JSON.parse(raw);
+        }
+        else {
+            homeState = new HomeState();
+        }
+    } catch (err) {
+        console.warn('Failed to load home state', err);
+    }
+}
+
+// Render the Home page, given the state in homeState
+export function renderHomePage() {
+    // Club
+    clubInput.value = homeState.selectedClub;
+    clubSuggest.hidden = true;
+
+    // Courses
+    const courses = getCoursesForClub(homeState.selectedClub);
+    populatehomeCourseSel(courses);
+    if (homeState.selectedCourseId) {
+        homeCourseSel.value = homeState.selectedCourseId;
+    }
+
+    // Tees
+    const course = courses.find(c => String(c.id) === String(homeState.selectedCourseId)) || null;
+    populateHomeTees(course);
+
+    menTeeSel.value = homeState.menTee || '';
+    ladiesTeeSel.value = homeState.ladiesTee || '';
+  
+    updateMaleTees(course?.tees?.male || []);
+    updateFemaleTees(course?.tees?.female || []);
+
+    // Format
+    formatSelect.value = homeState.format;
+    renderFormatHelper();
+
+    // Players
+    renderHomePlayers();
+
+    recalcPHAll();
+}
+
+function renderFormatHelper() {
+  const v = formatSelect.value;
+  formatHelper.textContent = formatText[v] || '';
+}
+
+function populatePlayerSelect(selectEl) {
+  if (!selectEl) return;
+  const prev = selectEl.value || '';
+
+
+  const players = getPlayers();
+  clearNode(selectEl);
+  selectEl.appendChild(optionFor('', ''));
+
+  players.forEach(p => {
+    selectEl.appendChild(optionFor(p.name, p.name));
+  });
+
+  // Preserve previous selection if still present, else blank
+  const hasPrev = Array.from(selectEl.options).some(o => o.value === prev);
+  selectEl.value = hasPrev ? prev : '';
+}
+
+function populatehomeCourseSel(courses) {
+    if (!homeCourseSel) return;
+
+    homeCourseSel.innerHTML = '';
+    courses.forEach(c => {
+      const o = document.createElement('option');
+      o.value = String(c.id);
+      o.textContent = c.course_name || '';
+      homeCourseSel.appendChild(o);
+    });
+}
+
+function populateHomeTees(course) {
+    if (!course) return;
+
+    const maleTees = (course.tees?.male || [])
+    const femaleTees = (course.tees?.female || [])
+    if (menTeeSel) {
+      clearNode(menTeeSel);
+      maleTees.forEach(t => menTeeSel.appendChild(optionFor(t.tee_name, t.tee_name)));
+    }
+    if (ladiesTeeSel) {
+      clearNode(ladiesTeeSel);
+      femaleTees.forEach(t => ladiesTeeSel.appendChild(optionFor(t.tee_name, t.tee_name)));
+    }
+}
+
+function renderHomePlayers() {
+  const rows = getHomePlayerRows();
+  rows.forEach((r, i) => {
+      const player = (i < homeState.players.length) ? homeState.players[i] : { name: '', hi: '' };
+
+      // Add all the players as options to the select
+      populatePlayerSelect(r.select);
+
+      r.select.value = player.name;
+      r.hiInput.value = String(player.hi);
+  });
+}
+
+function getHomePlayerRows() {
+    const table = document.querySelector('.players-table');
+    if (!table) return [];
+    const rows = [];
+    const selects = table.querySelectorAll('tbody tr select[aria-label^="Player"]');
+    selects.forEach(sel => {
+        const tr = sel.closest('tr');
+        if (!tr) return;
+        rows.push({
+            row: tr,
+            select: sel,
+            hiInput: tr.querySelector('.hi-input'),
+            phSpan: tr.querySelector('.ph-value'),
+        });
+    });
+    return rows;
+}
+
+function getHomePlayers() {
+    const homePlayerRows = getHomePlayerRows();
+    // Return array of { name, hi } objects
+    return homePlayerRows.map(r => ({
+        name: r.select.value,
+        hi: r.hiInput ? Number(r.hiInput.value) : null
+    }));
+}
+
+function recalcPHAll() {
+  const rows = getHomePlayerRows();
+  
+  const course = getCourse(homeState.selectedCourseId, homeState.selectedClub);
+  if (!course) return;
+
+  const fmt = formatSelect ? formatSelect.value : 'General play';
+
+  // Get the selected tee data
+  const maleTees = course.tees?.male || [];
+  const femaleTees = course.tees?.female || [];
+  const maleTee = maleTees.find(t => t.tee_name === homeState.menTee) || maleTees[0] || null;
+  const femaleTee = femaleTees.find(t => t.tee_name === homeState.ladiesTee) || femaleTees[0] || null;
+
+  //C ompute the course handicap for each player
+  rows.forEach(r => {
+    const player = getPlayer(r.select.value);
+    r.gender = player ? player.gender : 'M';
+    const tee = r.gender === 'M' ? maleTee : femaleTee;
+    if (!tee) return;
+
+    r.ch = computeCH(Number(r.hiInput.value), tee.slope_rating, tee.course_rating, tee.par_total);
+  });
+
+  //Compute the playing handicap for each player
+  calculatePH(fmt, rows);
+
+  // Update the PH display
+  for (const row of rows)
+  {
+    if (row.phSpan) {
+      if (row.ph)
+      {
+        row.phSpan.textContent = String(Math.round(row.ph));
+      }
+      else {
+        row.phSpan.textContent = '';
+      }
+    }
+  }
+}
+
+function recalcPHAll1() {
+  const rows = getHomePlayerRows();
+  if (!rows.length) return;
+
+  const course = getCourse(homeState.selectedCourseId);
+  if (!course) return;
+
+  const fmt = formatSelect ? formatSelect.value : 'General play';
+
+  //Get the selected tee data
+  const maleTees = course.tees?.male || [];
+  const femaleTees = course.tees?.female || [];
+  const maleTee = maleTees.find(t => t.tee_name === homeState.menTee) || maleTees[0] || null;
+  const femaleTee = femaleTees.find(t => t.tee_name === homeState.ladiesTee) || femaleTees[0] || null;
+
+  //Compute the course handicap for each player
+  rows.forEach(r => {
+    const player = getPlayer(r.select.value);
+    r.gender = player ? player.gender : 'M';
+    const tee = r.gender === 'M' ? maleTee : femaleTee;
+    if (!tee) return;
+
+    r.ch = computeCH(Number(r.hiInput.value), tee.slope_rating, tee.course_rating, tee.par_total);
+  });
+
+  //Set the PH values depending on the format
+  function setPH(rd, val) {
+    if (!rd || !rd.phSpan) return;
+    rd.phSpan.textContent = (val == null || !Number.isFinite(val)) ? '' : String(Math.round(val));
+  }
+
+  function setBlank(rd) { setPH(rd, null); }
+
+  if (fmt === 'General play') {
+    rows.forEach(r => setPH(r, r.ch));
+    return;
+  }
+  if (fmt === 'Individual') {
+    rows.forEach(r => setPH(r, r.ch == null ? null : 0.95 * r.ch));
+    return;
+  }
+  if (fmt === '4B better-ball') {
+    rows.forEach(r => setPH(r, r.ch == null ? null : 0.85 * r.ch));
+    return;
+  }
+  if (fmt === 'Foursomes') {
+    // Pairs: (0,1), (2,3)
+    for (let i = 0; i < rows.length; i += 2) {
+      const a = rows[i];
+      const b = rows[i + 1];
+      if (!a || !b) { // odd player -> blank
+        if (a) setBlank(a);
+        if (b) setBlank(b);
+        continue;
+      }
+      if (a.ch == null || b.ch == null) {
+        setBlank(a); 
+        setBlank(b);
+        continue;
+      }
+      const th = 0.5 * (a.ch + b.ch);
+      setPH(a, th);
+      setPH(b, th);
+    }
+    return;
+  }
+  if (fmt === 'Greensomes') {
+    // Pairs: (0,1), (2,3)
+    for (let i = 0; i < rows.length; i += 2) {
+      const a = rows[i];
+      const b = rows[i + 1];
+      if (!a || !b) { // odd player -> blank
+        if (a) setBlank(a);
+        if (b) setBlank(b);
+        continue;
+      }
+      if (a.ch == null || b.ch == null) {
+        setBlank(a); 
+        setBlank(b);
+        continue;
+      }
+      const lo = Math.min(a.ch, b.ch);
+      const hi = Math.max(a.ch, b.ch);
+      const th = 0.6 * lo + 0.4 * hi;
+      setPH(a, th);
+      setPH(b, th);
+    }
+    return;
+  }
+  if (fmt === '2B match-play') {
+    // Pairs: (0,1), (2,3)
+    for (let i = 0; i < rows.length; i += 2) {
+      const a = rows[i];
+      const b = rows[i + 1];
+      if (!a || !b) { if (a) setBlank(a); if (b) setBlank(b); continue; }
+      if (a.ch == null || b.ch == null) { setBlank(a); setBlank(b); continue; }
+      if (a.ch <= b.ch) {
+        setPH(a, 0);
+        setPH(b, b.ch - a.ch);
+      } else {
+        setPH(b, 0);
+        setPH(a, a.ch - b.ch);
+      }
+    }
+    return;
+  }
+  if (fmt === '4B match-play') {
+    // Consider all rows with CH; lowest gets 0, others get 0.9 * (CH - min)
+    const valid = rows.filter(r => r.ch != null);
+    if (valid.length === 0) { rows.forEach(r => setBlank(r)); return; }
+    const minCH = Math.min(...valid.map(r => r.ch));
+    rows.forEach(r => {
+      if (r.ch == null) { setBlank(r); return; }
+      if (Math.abs(r.ch - minCH) < 1e-9) { setPH(r, 0); }
+      else { setPH(r, 0.9 * (r.ch - minCH)); }
+    });
+    return;
+  }
+  if (fmt === 'Foursomes match-play') {
+    // Lowest team gets 0, others team gets 50% of the difference between the sum of course handicaps
+    const valid = rows.filter(r => r.ch != null);
+    if (valid.length < 4) { rows.forEach(r => setBlank(r)); return; }
+    const t1 = rows[0].ch + rows[1].ch;
+    const t2 = rows[2].ch + rows[3].ch;
+    
+    if (t1 < t2) {
+      setPH(rows[0], 0);
+      setPH(rows[1], 0);
+      setPH(rows[2], 0.5 * (t2 - t1));
+      setPH(rows[3], 0.5 * (t2 - t1));
+    } else if (t1 > t2) {
+      setPH(rows[0], 0.5 * (t1 - t2));
+      setPH(rows[1], 0.5 * (t1 - t2));
+      setPH(rows[2], 0);
+      setPH(rows[3], 0);
+    }
+    else {
+      rows.forEach(r => setPH(r,0));
+    }
+    return;
+  }
+
+  // Fallback: act like General play
+  rows.forEach(r => setPH(r, r.ch));
+}
+
+function updateMaleTees(tees) {
+  const name = menTeeSel.value;
+  const t = tees.find(x => x.tee_name === name);
+
+  menSlope.textContent = t?.slope_rating ?? '';
+  menRating.textContent = t?.course_rating ?? '';
+  menPar.textContent = t?.par_total ?? '';
+}
+
+function updateFemaleTees(tees) {
+  const name = ladiesTeeSel.value;
+  const t = tees.find(x => x.tee_name === name);
+  
+  ladiesSlope.textContent = t?.slope_rating ?? '';
+  ladiesRating.textContent = t?.course_rating ?? '';
+  ladiesPar.textContent = t?.par_total ?? '';
+}
+
+function showSuggest(items) {
+  if (!clubSuggest) return;
+
+  clubSuggest.innerHTML = '';
+  for (const it of items) {
+    const div = document.createElement('div');
+    div.className = 'suggest-item';
+    div.textContent = it;
+    clubSuggest.appendChild(div);
+  }
+  clubSuggest.hidden = (items.length === 0);
+}
+
+function onClubInput_Input() {
+  // If we have a selected club and the input is being changed, revert it
+  // This discards additional characters that were typed afterwards
+  const selectedClubName = homeState.selectedClub;
+  if (selectedClubName.length > 0 && clubInput.value.trim() !== selectedClubName) {
+    clubInput.value = selectedClubName;
+    return;
+  }
+
+  // See if we have a match
+  const prefix = clubInput.value.trim();
+  const clubs = findClubs(prefix);
+  if (clubs.length === 1) {
+    selectClub(clubs[0]);
+    return;
+  }
+ 
+  // Show suggestions only if we have at least 3 characters
+  if (prefix.length < 3) {
+    clubSuggest.hidden = true;
+  } else {
+    showSuggest(clubs);
+  }
+}
+
+function selectClub(clubName) {
+  homeState.selectedClub = clubName;  
+  homeState.selectedCourseId = null;
+  homeState.menTee = null;
+  homeState.ladiesTee = null;
+
+  const courses = getCoursesForClub(clubName);
+  if (courses?.length > 0) {
+    homeState.selectedCourseId = courses[0].id;
+
+    const maleTees = courses[0].tees?.male || [];
+    if (maleTees?.length > 0) {
+      homeState.menTee = maleTees[0].tee_name;
+    }
+
+    const femaleTees = courses[0].tees?.female || [];
+    if (femaleTees?.length > 0) {
+      homeState.ladiesTee = femaleTees[0].tee_name;
+    }
+  }
+
+  renderHomePage();
+  saveHomeState();
+}
+
+function onClubSuggest_Mousedown(e) {
+  const item = e.target.closest('.suggest-item');
+  if (!item) return;
+  selectClub(item.textContent.trim());
+}
+
+function onClubInput_Change() {
+  selectClub(clubInput.value.trim());
+} 
+
+function onClubClear_Click() {
+  selectClub(null);
+}
+
+function onFormatSelect_Change() {
+  homeState.format = formatSelect.value;
+  renderFormatHelper();
+  saveHomeState();
+  recalcPHAll();
+}
+
+function onHomeCourseSel_Change() {
+  homeState.selectedCourseId = homeCourseSel.value;
+  renderHomePage();
+  saveHomeState();
+}
+
+function onMenTeeSel_Change() {
+  homeState.menTee = menTeeSel.value;
+  saveHomeState();
+
+  const course = getCourse(homeState.selectedCourseId, homeState.selectedClub);
+  updateMaleTees(course?.tees?.male || []);
+  recalcPHAll();
+}
+
+function onLadiesTeeSel_Change() {
+  homeState.ladiesTee = ladiesTeeSel.value;
+  saveHomeState();
+
+  const course = getCourse(homeState.selectedCourseId, homeState.selectedClub);
+  updateFemaleTees(course?.tees?.male || []);
+  recalcPHAll();
+}
+
+function onPlayerSel_Change(e) {
+  const name = e.target.value;
+
+  if (name === '') {
+    // Recreate the home state players with no gaps
+    homeState.players = [];
+    const players = getHomePlayers();
+    for (const p of players) {
+      if (p.name !== '') {
+        homeState.players.push(p);
+      }
+    };  
+    renderHomePlayers();
+  }
+  else {
+    // Set the corresponding HI from the player DB
+    const tr = e.target.closest('tr');
+    const hiInput = tr?.querySelector('.hi-input');
+            
+    if (hiInput) {
+      const player = getPlayer(name);
+      hiInput.value = player?.hi ?? '';
+    }
+  }
+
+  saveHomeState();
+  recalcPHAll();
+}
+
+function onPlayerHiInput_Change() {
+  saveHomeState();
+  recalcPHAll();
+
+  //TODO - update player on Players Page
+}
+

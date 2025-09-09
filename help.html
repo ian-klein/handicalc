@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HandiCalc Help</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --surface: #fff;
+      --text: #1d1d1f;
+      --muted: #555;
+      --border: #d2d2d7;
+      --primary: #0a66c2;
+      --radius: 8px;
+      --space: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      color: var(--text);
+      background-color: var(--bg);
+      padding: var(--space);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: calc(var(--space) * 1.5);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .content {
+      padding: var(--space);
+    }
+
+    .help-section {
+      margin-bottom: calc(var(--space) * 1.5);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--space);
+    }
+
+    .help-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    .help-text {
+      color: var(--muted);
+      margin-bottom: var(--space);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: calc(var(--space) / 2);
+      }
+      
+      .content {
+        padding: calc(var(--space) / 1.5);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>HandiCalc Help</h1>
+    </header>
+    
+    <div class="content">
+      <div id="overview" class="help-section">
+        <div class="help-text">
+          <p>HandiCalc calculates the playing handicap for you and your fellow players using the WHS rules as of April 2024. There are three pages in the app: <a href="#home-page">Home</a>, <a href="#players">Players</a> and <a href="#courses">Courses</a>. Use the navigation bar at the bottom of the page to switch between them. The pages work as follows:</p>
+          
+          <ul>
+            <li><a href="#home-page"><strong>Home</strong></a> - Calculates playing handicaps for the club, course, tees and format</li>
+            <li><a href="#players"><strong>Players</strong></a> - Define players</li>
+            <li><a href="#courses"><strong>Courses</strong></a> - Add new courses, or fix errors in the course database</li>
+          </ul>
+          
+          <p>Start by defining yourself and your playing partners on the Players page. Then use the Home page to make the calculations. If you see that the course data is wrong (sometimes the database can be inaccurate or out of date) switch to the Courses page to adjust the values as necessary. If you are at a course that is not in the database, you can also add a completely new course.</p>
+          
+          <p>All of the data you enter into HandiCalc - the players, the last course you used, any changes to courses and so on - are saved on your device, so that next time you display the page they are all there.</p>
+          
+          <p>If anybody's handicap index (HI) changes, you can edit it either on the Players page, or if that player is selected on the Home page, you can just update it in-line on the Home page. Either way, the value is saved for next time.</p>
+        </div>
+      </div>
+
+      <!-- Home Page Section -->
+      <div id="home-page" class="help-section">
+        <h2>Home Page</h2>
+        <div class="help-text">
+          <p>The course database is organised into clubs, courses and tees. A club may have multiple courses, and a course typically has multiple tees. For example The Gog Magog Golf Club has two courses: the Wandlebury and the Old Course. Each of these has multiple tees, rated for men and ladies.</p>
+          
+          <p>To select a club, start typing in the club name. As soon as you type 3 letters if only one club matches it is filled in, and if multiple clubs match you can pick the one you want. Use the X button on the right to clear the current contents to search a new club.</p>
+          
+          <p>Once the club is selected, you can choose the course and the tees you are playing from (for both men and ladies). Then select the format you are playing; the text underneath explains what adjustment is applied to your course handicap. Finally, select the players who are playing. For team formats (four ball or foursomes) you need to select an even number of players. The playing handicap is calculated when any of the factors is changed.</p>
+          
+          <p>You can remove a player from the list by selecting the blank option from the dropdown. You can also change a players handicap index in this table - it updates the record for the player.</p>
+        </div>
+      </div>
+
+      <!-- Players Section -->
+      <div id="players" class="help-section">
+        <h2>Players</h2>
+        <div class="help-text">
+          <p>Use the + button to add a new player. Type their name, select their gender and enter their handicap index. You can remove a player from the list using the - button.</p>
+          <p>The players defined here will be shown when selecting a player on the Home page.</p>
+        </div>
+      </div>
+
+      <!-- Courses Section -->
+      <div id="courses" class="help-section">
+        <h2>Courses</h2>
+        <div class="help-text">
+          <p>The courses page is used to fix errors in the course database, or create a new course if it is not defined in the database.</p>
+          
+          <p>When you show the page, the course that was selected on the Home page is shown. You can select a different course that you have previously added to edited if necessary. You can edit any of the values for the course that is displayed, and your edits are saved to your device (the course database itself is not updated).</p>
+          
+          <p>To create a new course click the New button. Type the club name and then tap Add; the club is added with a single course named after the club. Now you can define the tees and the slope rating, course rating and par values by reading them from the scorecard. There is no need to define everything, just the tees you are using on the day. The course is saved to your device.</p>
+          
+          <p>Whenever you view a course on the Courses page that you have edited (or added), the Delete button will enable you to delete it from your Device.</p>
+          
+          <p>Periodically, the course database will be updated. The details will be available on this help page.</p>
+        </div>
+      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Scroll to the section specified in the URL hash on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const scrollToSection = () => {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          const section = document.getElementById(hash);
+          if (section) {
+            // Small delay to ensure smooth scrolling
+            setTimeout(() => {
+              section.scrollIntoView({ behavior: 'smooth' });
+              // Add highlight effect
+              section.style.transition = 'background-color 0.5s ease';
+              section.style.backgroundColor = 'rgba(10, 102, 194, 0.05)';
+              
+              // Remove highlight after a delay
+              setTimeout(() => {
+                section.style.backgroundColor = '';
+              }, 2000);
+            }, 100);
+          }
+        }
+      };
+      
+      // Handle initial page load
+      scrollToSection();
+      
+      // Handle back/forward navigation
+      window.addEventListener('popstate', scrollToSection);
+      
+      // Listen for navigation requests from the main app
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('handicalc_help');
+        channel.onmessage = (event) => {
+          if (event.data && event.data.type === 'NAVIGATE') {
+            // Update the URL without adding to history
+            history.replaceState(null, '', event.data.url);
+            scrollToSection();
+            window.focus();
+          }
+        };
+      }
+    });
+  </script>
+</body>
+</html>
