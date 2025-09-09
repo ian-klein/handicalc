@@ -2,3 +2,6 @@
 
 export function renderCoursesPage() {
 }
+
+export function wireCoursesEvents() {
+}

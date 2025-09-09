@@ -2,8 +2,8 @@
 
 import { loadCourseCache } from './course-data.js';
 import { loadHomeState, renderHomePage, wireHomeEvents } from './home.js';
-import { renderPlayersPage, hasIncompletePlayers } from './players.js';
-import { renderCoursesPage } from './courses.js';
+import { renderPlayersPage, hasIncompletePlayers, wirePlayersEvents } from './players.js';
+import { renderCoursesPage, wireCoursesEvents } from './courses.js';
 
 (function() {
   const app = document.getElementById('app');
@@ -112,6 +112,8 @@ import { renderCoursesPage } from './courses.js';
     wireNavBar();
     wireHelpButtons();
     wireHomeEvents();
+    wirePlayersEvents();
+    wireCoursesEvents();
 
     // Hide splash
     const splash = document.getElementById('splash');
