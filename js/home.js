@@ -93,7 +93,7 @@ function saveHomeState() {
       homeState.selectedCourseId = homeCourseSel.value;
       homeState.menTee = menTeeSel.value
       homeState.ladiesTee = ladiesTeeSel.value;
-      homeState.players = getHomePlayers();;
+      homeState.players = getHomePlayers();
 
       localStorage.setItem(HOME_STORAGE_KEY, JSON.stringify(homeState));
     } catch (err) {
@@ -231,11 +231,16 @@ function getHomePlayerRows() {
 
 function getHomePlayers() {
     const homePlayerRows = getHomePlayerRows();
-    // Return array of { name, hi } objects
-    return homePlayerRows.map(r => ({
-        name: r.select.value,
-        hi: r.hiInput ? Number(r.hiInput.value) : null
-    }));
+
+    const players = [];
+    for (const r of homePlayerRows) {
+      const name = r.select.value;
+      const hi = r.hiInput ? Number(r.hiInput.value) : null;
+      if (name !== '') {
+        players.push({ name, hi });
+      }
+    }
+    return players;
 }
 
 function recalcPHAll() {
@@ -255,11 +260,16 @@ function recalcPHAll() {
   //C ompute the course handicap for each player
   rows.forEach(r => {
     const player = getPlayer(r.select.value);
-    r.gender = player ? player.gender : 'M';
-    const tee = r.gender === 'M' ? maleTee : femaleTee;
-    if (!tee) return;
-
-    r.ch = computeCH(Number(r.hiInput.value), tee.slope_rating, tee.course_rating, tee.par_total);
+    if (player && player !== '') {
+      const hi = r.hiInput ? Number(r.hiInput.value) : null;
+      r.gender = player.gender;
+      const tee = r.gender === 'M' ? maleTee : femaleTee;
+      r.ch = computeCH(hi, tee?.slope_rating, tee?.course_rating, tee?.par_total);
+    }
+    else {
+      r.ch = null;
+      r.gender = null;
+    }
   });
 
   //Compute the playing handicap for each player
@@ -278,152 +288,6 @@ function recalcPHAll() {
       }
     }
   }
-}
-
-function recalcPHAll1() {
-  const rows = getHomePlayerRows();
-  if (!rows.length) return;
-
-  const course = getCourse(homeState.selectedCourseId);
-  if (!course) return;
-
-  const fmt = formatSelect ? formatSelect.value : 'General play';
-
-  //Get the selected tee data
-  const maleTees = course.tees?.male || [];
-  const femaleTees = course.tees?.female || [];
-  const maleTee = maleTees.find(t => t.tee_name === homeState.menTee) || maleTees[0] || null;
-  const femaleTee = femaleTees.find(t => t.tee_name === homeState.ladiesTee) || femaleTees[0] || null;
-
-  //Compute the course handicap for each player
-  rows.forEach(r => {
-    const player = getPlayer(r.select.value);
-    r.gender = player ? player.gender : 'M';
-    const tee = r.gender === 'M' ? maleTee : femaleTee;
-    if (!tee) return;
-
-    r.ch = computeCH(Number(r.hiInput.value), tee.slope_rating, tee.course_rating, tee.par_total);
-  });
-
-  //Set the PH values depending on the format
-  function setPH(rd, val) {
-    if (!rd || !rd.phSpan) return;
-    rd.phSpan.textContent = (val == null || !Number.isFinite(val)) ? '' : String(Math.round(val));
-  }
-
-  function setBlank(rd) { setPH(rd, null); }
-
-  if (fmt === 'General play') {
-    rows.forEach(r => setPH(r, r.ch));
-    return;
-  }
-  if (fmt === 'Individual') {
-    rows.forEach(r => setPH(r, r.ch == null ? null : 0.95 * r.ch));
-    return;
-  }
-  if (fmt === '4B better-ball') {
-    rows.forEach(r => setPH(r, r.ch == null ? null : 0.85 * r.ch));
-    return;
-  }
-  if (fmt === 'Foursomes') {
-    // Pairs: (0,1), (2,3)
-    for (let i = 0; i < rows.length; i += 2) {
-      const a = rows[i];
-      const b = rows[i + 1];
-      if (!a || !b) { // odd player -> blank
-        if (a) setBlank(a);
-        if (b) setBlank(b);
-        continue;
-      }
-      if (a.ch == null || b.ch == null) {
-        setBlank(a); 
-        setBlank(b);
-        continue;
-      }
-      const th = 0.5 * (a.ch + b.ch);
-      setPH(a, th);
-      setPH(b, th);
-    }
-    return;
-  }
-  if (fmt === 'Greensomes') {
-    // Pairs: (0,1), (2,3)
-    for (let i = 0; i < rows.length; i += 2) {
-      const a = rows[i];
-      const b = rows[i + 1];
-      if (!a || !b) { // odd player -> blank
-        if (a) setBlank(a);
-        if (b) setBlank(b);
-        continue;
-      }
-      if (a.ch == null || b.ch == null) {
-        setBlank(a); 
-        setBlank(b);
-        continue;
-      }
-      const lo = Math.min(a.ch, b.ch);
-      const hi = Math.max(a.ch, b.ch);
-      const th = 0.6 * lo + 0.4 * hi;
-      setPH(a, th);
-      setPH(b, th);
-    }
-    return;
-  }
-  if (fmt === '2B match-play') {
-    // Pairs: (0,1), (2,3)
-    for (let i = 0; i < rows.length; i += 2) {
-      const a = rows[i];
-      const b = rows[i + 1];
-      if (!a || !b) { if (a) setBlank(a); if (b) setBlank(b); continue; }
-      if (a.ch == null || b.ch == null) { setBlank(a); setBlank(b); continue; }
-      if (a.ch <= b.ch) {
-        setPH(a, 0);
-        setPH(b, b.ch - a.ch);
-      } else {
-        setPH(b, 0);
-        setPH(a, a.ch - b.ch);
-      }
-    }
-    return;
-  }
-  if (fmt === '4B match-play') {
-    // Consider all rows with CH; lowest gets 0, others get 0.9 * (CH - min)
-    const valid = rows.filter(r => r.ch != null);
-    if (valid.length === 0) { rows.forEach(r => setBlank(r)); return; }
-    const minCH = Math.min(...valid.map(r => r.ch));
-    rows.forEach(r => {
-      if (r.ch == null) { setBlank(r); return; }
-      if (Math.abs(r.ch - minCH) < 1e-9) { setPH(r, 0); }
-      else { setPH(r, 0.9 * (r.ch - minCH)); }
-    });
-    return;
-  }
-  if (fmt === 'Foursomes match-play') {
-    // Lowest team gets 0, others team gets 50% of the difference between the sum of course handicaps
-    const valid = rows.filter(r => r.ch != null);
-    if (valid.length < 4) { rows.forEach(r => setBlank(r)); return; }
-    const t1 = rows[0].ch + rows[1].ch;
-    const t2 = rows[2].ch + rows[3].ch;
-    
-    if (t1 < t2) {
-      setPH(rows[0], 0);
-      setPH(rows[1], 0);
-      setPH(rows[2], 0.5 * (t2 - t1));
-      setPH(rows[3], 0.5 * (t2 - t1));
-    } else if (t1 > t2) {
-      setPH(rows[0], 0.5 * (t1 - t2));
-      setPH(rows[1], 0.5 * (t1 - t2));
-      setPH(rows[2], 0);
-      setPH(rows[3], 0);
-    }
-    else {
-      rows.forEach(r => setPH(r,0));
-    }
-    return;
-  }
-
-  // Fallback: act like General play
-  rows.forEach(r => setPH(r, r.ch));
 }
 
 function updateMaleTees(tees) {
@@ -557,13 +421,7 @@ function onPlayerSel_Change(e) {
 
   if (name === '') {
     // Recreate the home state players with no gaps
-    homeState.players = [];
-    const players = getHomePlayers();
-    for (const p of players) {
-      if (p.name !== '') {
-        homeState.players.push(p);
-      }
-    };  
+    homeState.players = getHomePlayers();
     renderHomePlayers();
   }
   else {

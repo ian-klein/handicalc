@@ -1,4 +1,5 @@
 // Handicap calculations
+'use strict';
 
 export function computeCH(hi, slope, rating, par) {
     if (hi == null || slope == null || rating == null || par == null) return null;
