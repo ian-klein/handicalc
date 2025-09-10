@@ -115,6 +115,14 @@ export function loadHomeState() {
     }
 }
 
+export function getHomeClub() {
+    return homeState.selectedClub;
+}
+
+export function getHomeCourseId() {
+    return homeState.selectedCourseId;
+}
+
 // Render the Home page, given the state in homeState
 export function renderHomePage() {
     // Club

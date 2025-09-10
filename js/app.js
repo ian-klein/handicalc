@@ -109,6 +109,7 @@ import { renderCoursesPage, wireCoursesEvents } from './courses.js';
   }
 
   function initApp() {
+    // Wire all the controls
     wireNavBar();
     wireHelpButtons();
     wireHomeEvents();

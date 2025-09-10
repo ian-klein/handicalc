@@ -395,8 +395,8 @@
 
         <!-- Club select -->
         <div class="group">
-          <label class="group-title" for="club-name">Club name:</label>
-          <select id="club-name"></select>
+          <label class="group-title" for="courses-club-name">Club name:</label>
+          <select id="courses-club-name"></select>
         </div>
 
         <!-- Courses table -->
@@ -463,8 +463,8 @@
             <label class="group-title">Tees</label>
             <div class="spacer"></div>
             <div class="gender-choice" role="radiogroup" aria-label="Gender">
-              <label><input type="radio" name="courses-gender" value="M" checked> Male</label>
-              <label><input type="radio" name="courses-gender" value="F"> Female</label>
+              <label><input type="radio" name="courses-gender" value="male" checked> Male</label>
+              <label><input type="radio" name="courses-gender" value="female"> Female</label>
             </div>
           </div>
         </div>
@@ -567,8 +567,8 @@
         </div>
 
         <div class="footer-actions">
-          <button class="btn primary btn-sm" type="button">New</button>
-          <button class="btn primary btn-sm" type="button" disabled>Delete</button>
+          <button class="btn primary btn-sm" type="button" id="courses-new">New</button>
+          <button class="btn primary btn-sm" type="button" id="courses-delete">Delete</button>
         </div>
       </section>
     </main>

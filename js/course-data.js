@@ -81,3 +81,11 @@ export function findClubs(prefix) {
     }
     return Array.from(matches);
 }
+
+export function getLocalClubs() {
+    return [ ...new Set(courseCache.localCourses.map(c => c.club_name)) ];
+}
+
+export function isLocalClub(clubName) {
+    return courseCache.localCourses.some(c => c.club_name === clubName);
+}

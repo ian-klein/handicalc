@@ -1,4 +1,5 @@
 // Players page functions
+'use strict';
 
 const PLAYERS_STORAGE_KEY = 'players';
 
