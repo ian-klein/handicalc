@@ -48,6 +48,27 @@ export function saveLocalCourses() {
     localStorage.setItem(LOCAL_COURSES_KEY, JSON.stringify(courseCache.localCourses));
 }
 
+export function addLocalClub(clubName, courses) {
+    courses.forEach(course => courseCache.localCourses.push(course));
+    saveLocalCourses();
+
+    // Update clubIndex
+    courseCache.clubIndex.delete(clubName);
+    courseCache.clubIndex.set(clubName, courses);
+}
+
+export function deleteLocalClub(clubName) {
+    courseCache.localCourses = courseCache.localCourses.filter(c => c.club_name !== clubName);
+    saveLocalCourses();
+
+    // Update clubIndex
+    courseCache.clubIndex.delete(clubName);
+    const globalCourses = courseCache.globalCourses.filter(c => c.club_name === clubName);
+    if (globalCourses.length > 0) {
+        courseCache.clubIndex.set(clubName, globalCourses);
+    }
+}
+
 // Return the local courses
 export function getLocalCourses() {
     return courseCache.localCourses;

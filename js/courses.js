@@ -1,7 +1,7 @@
 // Functions for managing the Courses page
 
 import { getHomeClub, getHomeCourseId } from "./home.js";
-import { getLocalClubs, getCoursesForClub, isLocalClub, saveLocalCourses } from "./course-data.js";
+import { getLocalClubs, getCoursesForClub, isLocalClub, addLocalClub, deleteLocalClub, saveLocalCourses } from "./course-data.js";
 import { clearNode, optionFor } from "./uilib.js";
 
 // DOM elements
@@ -190,6 +190,22 @@ function onNewBtn_Click() {
 }
 
 function onDeleteBtn_Click() {
-    
-}
+    const clubName = clubSelect.value;
+    const isLocal = isLocalClub(clubName);
 
+    if (isLocal) {
+        deleteLocalClub(clubName);
+        renderCoursesPage();
+    }
+    else  {
+        // It is a global club - make a local copy
+        const courses = getCoursesForClub(clubName);
+        const localCourses = [];
+        for (const course of courses) {
+            const localCourse = structuredClone(course);
+            localCourses.push(localCourse);
+        }
+        addLocalClub(clubName, localCourses);
+        renderCoursesPage();
+    }
+}
