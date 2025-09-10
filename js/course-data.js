@@ -44,10 +44,8 @@ export function getClubIndex() {
 }
 
 // Save the local courses to disk and update cache
-export function saveLocalCourses(localCourses) {
-    const courseList = Array.isArray(localCourses) ? localCourses : [];
-    localStorage.setItem(LOCAL_COURSES_KEY, JSON.stringify(courseList));
-    courseCache.localCourses = courseList;
+export function saveLocalCourses() {
+    localStorage.setItem(LOCAL_COURSES_KEY, JSON.stringify(courseCache.localCourses));
 }
 
 // Return the local courses

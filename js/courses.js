@@ -1,7 +1,7 @@
 // Functions for managing the Courses page
 
 import { getHomeClub, getHomeCourseId } from "./home.js";
-import { getLocalClubs, getCoursesForClub, isLocalClub } from "./course-data.js";
+import { getLocalClubs, getCoursesForClub, isLocalClub, saveLocalCourses } from "./course-data.js";
 import { clearNode, optionFor } from "./uilib.js";
 
 // DOM elements
@@ -17,7 +17,23 @@ const deleteBtn = document.getElementById('courses-delete');
 
 export function wireCoursesEvents() {
     clubSelect.addEventListener('change', onClubSelect_Change);
-    genderChoice.addEventListener('change', (e) => { onGenderChange(e); });
+    genderChoice.addEventListener('change', (e) => { onGenderChoice_Change(e); });
+
+    coursesAdd.addEventListener('click', onCoursesAdd_Click);
+    document.querySelectorAll('#courses-tbody tr').forEach(row => {
+        row.querySelector('.courses-remove').addEventListener('click', (e) => { onCoursesRemove_Click(e); });
+    });
+
+    teesAdd.addEventListener('click', onTeesAdd_Click);
+    document.querySelectorAll('#tees-tbody tr').forEach(row => {
+        row.querySelector('.tee-slope').addEventListener('change', (e) => { onTeeData_Change(e); });
+        row.querySelector('.tee-cr').addEventListener('change', (e) => { onTeeData_Change(e); });
+        row.querySelector('.tee-par').addEventListener('change', (e) => { onTeeData_Change(e); });
+        row.querySelector('.tees-remove').addEventListener('click', (e) => { onTeesRemove_Click(e); });
+    });
+
+    newBtn.addEventListener('click', onNewBtn_Click);
+    deleteBtn.addEventListener('click', onDeleteBtn_Click);
 }
 
 export function renderCoursesPage() {
@@ -60,7 +76,7 @@ function renderCoursesTable(courseId) {
         row.querySelector('input[type=radio]').checked = String(course.id) === String(courseId);
 
         // Set control status
-        row.querySelector('.course-name').disabled = !isLocal;
+        row.querySelector('.course-name').disabled = true; // We dont allow the course name to be changed
     });
 }
 
@@ -91,7 +107,7 @@ function renderTeesTable(gender) {
         row.querySelector('.tee-par').value = tee.par_total;
 
         //Set control status
-        row.querySelector('.tee-name').disabled = !isLocal;
+        row.querySelector('.tee-name').disabled = true; // We dont allow the tee name to be changed
         row.querySelector('.tee-slope').disabled = !isLocal;
         row.querySelector('.tee-cr').disabled = !isLocal;
         row.querySelector('.tee-par').disabled = !isLocal;
@@ -119,11 +135,61 @@ function onClubSelect_Change() {
     renderButtons();
 }
 
-function onGenderChange(e) {
+function onGenderChoice_Change(e) {
     const r = e.target.closest('input[type="radio"][name="courses-gender"]');
     if (!r) return;
     const gender = r.value;
 
     renderTeesTable(gender);
+}
+
+function onCoursesAdd_Click() {
+
+}
+
+function onCoursesRemove_Click(e) {
+
+}
+
+function onTeesAdd_Click() {
+
+}
+
+function onTeeData_Change(e) {
+    const target = e.target;
+    const row = target.closest('tr');
+    if (!row) return;
+
+    // Get the tee name
+    const teeName = row.querySelector('.tee-name').value;
+
+    // Get the selected tees array
+    const courseSelect = document.querySelector('input[name="course-select"]:checked');
+    const courses = getCoursesForClub(clubSelect.value);
+    const course = courseSelect ? courses.find(c => String(c.id) === String(courseSelect.value)) : courses[0];
+    const gender = document.querySelector('input[name="courses-gender"]:checked').value;
+    const tees = gender === 'male' ? course.tees.male : course.tees.female;
+
+    // Find the tee and update it
+    const tee = tees.find(t => t.tee_name === teeName);
+    if (!tee) return;
+
+    // Update the tee
+    tee.slope_rating = row.querySelector('.tee-slope').value;
+    tee.course_rating = row.querySelector('.tee-cr').value;
+    tee.par_total = row.querySelector('.tee-par').value;
+    saveLocalCourses();
+}
+
+function onTeesRemove_Click(e) {
+
+}
+
+function onNewBtn_Click() {
+
+}
+
+function onDeleteBtn_Click() {
+    
 }
 
