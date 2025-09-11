@@ -108,3 +108,7 @@ export function getLocalClubs() {
 export function isLocalClub(clubName) {
     return courseCache.localCourses.some(c => c.club_name === clubName);
 }
+
+export function isClubNameTaken(clubName) {
+    return courseCache.clubIndex.has(clubName);
+}
