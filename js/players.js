@@ -42,7 +42,7 @@ function loadPlayers() {
     }
 }
 
-function savePlayers() {
+export function savePlayers() {
     localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(playerList));
 }
 

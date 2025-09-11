@@ -3,7 +3,7 @@
 
 import { getCourse, findClubs, getCoursesForClub } from "./course-data.js";  
 import { clearNode, optionFor } from "./uilib.js"
-import { getPlayer, getPlayers } from "./players.js";
+import { getPlayer, getPlayers, savePlayers } from "./players.js";
 import { computeCH, calculatePH } from "./handicap.js";
 
 // Local storage key for the home state
@@ -58,7 +58,7 @@ export function wireHomeEvents() {
   clubInput.addEventListener('input', onClubInput_Input);
   clubInput.addEventListener('change', onClubInput_Change);
   clubClear.addEventListener('click', onClubClear_Click);
-  clubSuggest.addEventListener('mousedown', (e) => { onClubSuggest_Mousedown(e); });
+  clubSuggest.addEventListener('mousedown', onClubSuggest_Mousedown);
 
   // If the suggest box is shown and the user clicks outside of it, hide it
   document.addEventListener('click', (e) => {
@@ -80,7 +80,7 @@ export function wireHomeEvents() {
   // Players
   const rows = getHomePlayerRows();
   for (const row of rows) {
-    row.select.addEventListener('change', (e) => { onPlayerSel_Change(e); });
+    row.select.addEventListener('change', onPlayerSel_Change);
     row.hiInput.addEventListener('change', onPlayerHiInput_Change);
   }
 }
@@ -447,10 +447,24 @@ function onPlayerSel_Change(e) {
   recalcPHAll();
 }
 
-function onPlayerHiInput_Change() {
+function onPlayerHiInput_Change(e) {
+  const target = e.target;
+
+  //Update player on Players Page
+  const row = target.closest('tr');
+  if (!row) return;
+
+  const idx = parseInt(row.dataset.index, 10);
+  const rows = getHomePlayerRows();
+  const playerName = rows[idx].select.value;
+
+  const player = getPlayer(playerName);
+  if (player) {
+    player.hi = target.value;
+    savePlayers();
+  }
+
   saveHomeState();
   recalcPHAll();
-
-  //TODO - update player on Players Page
 }
 
