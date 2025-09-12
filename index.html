@@ -591,7 +591,7 @@
 
   <!-- New Club Modal -->
   <div id="new-club-modal" class="modal" hidden>
-    <div class="modal-content">
+    <div class="club-modal-content">
       <h2>New Golf Club</h2>
       <div class="modal-body">
         <div class="form-group">
@@ -606,6 +606,25 @@
       <div id="new-club-error" class="error-message" aria-live="polite"></div>
     </div>
   </div>
+
+  <!-- New Tee Modal -->
+  <div id="new-tee-modal" class="modal" hidden>
+    <div class="tee-modal-content">
+      <h2>New Tee</h2>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="club-name-input">Tee Name:</label>
+          <input type="text" id="new-teee-name-input" class="modal-input" placeholder="Enter tee name" autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="add-new-tee" class="btn primary" disabled>OK</button>
+        <button id="cancel-new-tee" class="btn secondary">Cancel</button>
+      </div>
+      <div id="new-tee-error" class="error-message" aria-live="polite"></div>
+    </div>
+  </div>
+
 
   <script type="module" src="js/app.js"></script>
 </body>

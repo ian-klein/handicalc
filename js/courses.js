@@ -9,6 +9,7 @@ const clubSelect = document.getElementById('courses-club-name');
 const coursesAdd = document.getElementById('courses-add');
 const teesAdd = document.getElementById('tees-add');
 const genderChoice = document.querySelector('#courses .gender-choice');
+const coursesTbody = document.getElementById('courses-tbody');
 
 // New club modal elements
 const newClubModal = document.getElementById('new-club-modal');
@@ -17,15 +18,24 @@ const cancelNewClubBtn = document.getElementById('cancel-new-club');
 const addNewClubBtn = document.getElementById('add-new-club');
 const newClubErrorElement = document.getElementById('new-club-error');
 
+// New tee modal elements
+const newTeeModal = document.getElementById('new-tee-modal');
+const newTeeNameInput = document.getElementById('new-teee-name-input');
+const cancelNewTeeBtn = document.getElementById('cancel-new-tee');
+const addNewTeeBtn = document.getElementById('add-new-tee');
+const newTeeErrorElement = document.getElementById('new-tee-error');
+
 const newBtn = document.getElementById('courses-new');
 const deleteBtn = document.getElementById('courses-delete');
 
 export function wireCoursesEvents() {
     clubSelect.addEventListener('change', onClubSelect_Change);
+    coursesTbody.addEventListener('change', onCoursesTbody_Change);
     genderChoice.addEventListener('change', onGenderChoice_Change);
 
     coursesAdd.addEventListener('click', onCoursesAdd_Click);
     document.querySelectorAll('#courses-tbody tr').forEach(row => {
+        row.querySelector('.course-name').addEventListener('change', onCourseName_Change);
         row.querySelector('.courses-remove').addEventListener('click', onCoursesRemove_Click);
     });
 
@@ -39,11 +49,14 @@ export function wireCoursesEvents() {
 
     newBtn.addEventListener('click', onNewBtn_Click);
     deleteBtn.addEventListener('click', onDeleteBtn_Click);
-
     
     cancelNewClubBtn.addEventListener('click', onCancelNewClubBtn_Click);
     addNewClubBtn.addEventListener('click', onAddNewClubBtn_Click);
     newClubNameInput.addEventListener('input', onNewClubNameInput_Input);
+
+    cancelNewTeeBtn.addEventListener('click', onCancelNewTeeBtn_Click);
+    addNewTeeBtn.addEventListener('click', onAddNewTeeBtn_Click);
+    newTeeNameInput.addEventListener('input', onNewTeeNameInput_Input);
 }
 
 export function renderCoursesPage() {
@@ -67,7 +80,6 @@ function renderClub(clubName, courseId) {
     // Having selected the club, render the rest of the page
     renderCoursesTable(courseId);
     renderTeesTable('male');
-    renderButtons();
 }
 
 function renderCoursesTable(courseId) {
@@ -90,7 +102,11 @@ function renderCoursesTable(courseId) {
         row.querySelector('input[type=radio]').checked = String(course.id) === String(courseId);
 
         // Set control status
-        row.querySelector('.course-name').disabled = true; // We dont allow the course name to be changed
+        row.querySelector('.course-name').disabled = !isLocal;
+
+        const isNew = isNewCourse(course);
+        const btn = row.querySelector('.icon-cell img[alt="Remove"]');
+        btn.style.display = isNew && courses.length > 1 ? '' : 'none';
     });
 }
 
@@ -125,28 +141,20 @@ function renderTeesTable(gender) {
         row.querySelector('.tee-slope').disabled = !isLocal;
         row.querySelector('.tee-cr').disabled = !isLocal;
         row.querySelector('.tee-par').disabled = !isLocal;
+        row.querySelector('.icon-cell img[alt="Remove"]').style.display = isLocal ? '' : 'none';
+
     });
-}
-
-function renderButtons() {
-    const clubName = clubSelect.value;
-    const isLocal = isLocalClub(clubName);
-    deleteBtn.textContent = isLocal ? 'Delete' : 'Edit';
-
-    document.querySelectorAll('.icon-cell img[alt="Add"]').forEach(btn => {
-        btn.style.display = isLocal ? '' : 'none';
-      });
-      
-      // Show/hide remove buttons
-      document.querySelectorAll('.icon-cell img[alt="Remove"]').forEach(btn => {
-        btn.style.display = isLocal ? '' : 'none';
-      });
 }
 
 function onClubSelect_Change() {
     renderCoursesTable();
     renderTeesTable('male');
-    renderButtons();
+}
+
+function onCoursesTbody_Change(e) {
+    if (e.target.matches('input[type="radio"][name="course-select"]')) {
+        renderTeesTable('male');
+    }
 }
 
 function onGenderChoice_Change(e) {
@@ -158,45 +166,80 @@ function onGenderChoice_Change(e) {
 }
 
 function onCoursesAdd_Click(e) {
-
+    const clubName = clubSelect.value;
+    const course = createNewCourse(clubName);
+    const courses = getCoursesForClub(clubName);
+    courses.push(course);
+    saveLocalCourses();
+    renderCoursesTable(course.id);
+    renderTeesTable('male');
 }
 
 function onCoursesRemove_Click(e) {
+    const course = getCourseForEvent(e);
+    if (!course) return;
 
+    // Remove the course
+    const courses = getCoursesForClub(clubSelect.value);
+    courses.splice(courses.indexOf(course), 1);
+    saveLocalCourses();
+    renderCoursesTable();
+}
+
+function onCourseName_Change(e) {
+    const course = getCourseForEvent(e);
+    if (!course) return;
+
+    // Update the course
+    course.course_name = e.target.value;
+    saveLocalCourses();
+}
+
+function getCourseForEvent(e) {
+    const row = e.target.closest('tr');
+    if (!row) return null;
+
+    const idx = row.dataset.index;
+    const courses = getCoursesForClub(clubSelect.value);
+    return courses[idx];
 }
 
 function onTeesAdd_Click() {
-
+    newTeeNameInput.value = '';
+    newTeeErrorElement.textContent = '';
+    addNewTeeBtn.disabled = true;
+    newTeeModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    newTeeNameInput.focus();
 }
 
 function onTeeData_Change(e) {
-    const target = e.target;
-    const row = target.closest('tr');
-    if (!row) return;
-
-    // Get the tee name
-    const teeName = row.querySelector('.tee-name').value;
-
-    // Get the selected tees array
-    const courseSelect = document.querySelector('input[name="course-select"]:checked');
-    const courses = getCoursesForClub(clubSelect.value);
-    const course = courseSelect ? courses.find(c => String(c.id) === String(courseSelect.value)) : courses[0];
-    const gender = document.querySelector('input[name="courses-gender"]:checked').value;
-    const tees = gender === 'male' ? course.tees.male : course.tees.female;
-
-    // Find the tee and update it
-    const tee = tees.find(t => t.tee_name === teeName);
+    const className = e.target.className;
+    const value = e.target.value;
+    const { tee } = getTeeForEvent(e);
     if (!tee) return;
 
     // Update the tee
-    tee.slope_rating = row.querySelector('.tee-slope').value;
-    tee.course_rating = row.querySelector('.tee-cr').value;
-    tee.par_total = row.querySelector('.tee-par').value;
+    if (className === 'tee-slope') {
+        tee.slope_rating = value;
+    }
+    else if (className === 'tee-cr') {
+        tee.course_rating = value;
+    }
+    else if (className === 'tee-par') {
+        tee.par_total = value;
+    }
     saveLocalCourses();
 }
 
 function onTeesRemove_Click(e) {
+    const { gender, tees, tee } = getTeeForEvent(e);
+    if (!tee) return;
 
+    // Remove the tee
+    tees.splice(tees.indexOf(tee), 1);
+    saveLocalCourses();
+    renderTeesTable(gender);
 }
 
 function onNewBtn_Click(e) {
@@ -255,6 +298,34 @@ function onAddNewClubBtn_Click() {
     renderClub(clubName, courses[0].id);
 
     newClubModal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function onNewTeeNameInput_Input() {
+    const name = newTeeNameInput.value.trim();
+    addNewTeeBtn.disabled = name.length === 0;
+    
+    if (name.length > 0 && isTeeNameTaken(name)) {
+      newTeeErrorElement.textContent = 'Tee name already exists';
+      addNewTeeBtn.disabled = true;
+    } else {
+      newTeeErrorElement.textContent = '';
+    }
+}
+
+function onCancelNewTeeBtn_Click() {
+    newTeeModal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function onAddNewTeeBtn_Click() {
+    const teeName = newTeeNameInput.value.trim();
+    const { gender, tees } = getTees();
+    tees.push(createNewTee(teeName));
+    saveLocalCourses();
+    renderTeesTable(gender);
+
+    newTeeModal.hidden = true;
     document.body.style.overflow = '';
 }
 
@@ -327,4 +398,62 @@ function createNewCourse(clubName) {
             ]
         }
     };
+}
+
+function createNewTee(name) {
+    return {
+        tee_name: name,
+        course_rating: 0,
+        slope_rating: 0,
+        bogey_rating: 0,
+        total_yards: 0,
+        total_meters: 0,
+        number_of_holes: 0,
+        par_total: 0,
+        front_course_rating: 0,
+        front_slope_rating: 0,
+        front_bogey_rating: 0,
+        back_course_rating: 0,
+        back_slope_rating: 0,
+        back_bogey_rating: 0
+    };
+}
+
+function getTeeForEvent(e) {
+    const target = e.target;
+    const row = target.closest('tr');
+    if (!row) return null;
+
+    // Get the tee name
+    const teeName = row.querySelector('.tee-name').value;
+
+    // Get the selected tees array
+    const { gender, tees } = getTees();
+
+    // Find the tee
+    const tee = tees.find(t => t.tee_name === teeName);
+    return { gender, tees, tee };
+}
+
+function getTees() {
+    const course = getCourse();
+    const gender = document.querySelector('input[name="courses-gender"]:checked').value;
+    const tees = gender === 'male' ? course.tees.male : course.tees.female;
+    return { gender, tees };
+}
+
+function getCourse() {
+    const courseSelect = document.querySelector('input[name="course-select"]:checked');
+    const courses = getCoursesForClub(clubSelect.value);
+    const course = courseSelect ? courses.find(c => String(c.id) === String(courseSelect.value)) : courses[0];
+    return course;
+}
+
+function isNewCourse(course) {
+    return course.id >= 100000;
+}
+
+function isTeeNameTaken(teeName) {
+    const { tees } = getTees();
+    return tees.some(t => t.tee_name === teeName);
 }
