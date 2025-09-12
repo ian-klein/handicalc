@@ -156,6 +156,7 @@ function renderButtons() {
 function onClubSelect_Change() {
     renderCoursesTable();
     renderTeesTable('male');
+    renderButtons();
 }
 
 function onCoursesTbody_Change(e) {
@@ -174,7 +175,7 @@ function onGenderChoice_Change(e) {
 
 function onCoursesAdd_Click(e) {
     const clubName = clubSelect.value;
-    const course = createNewCourse(clubName);
+    const course = createNewCourse(clubName, 'New course');
     const courses = getCoursesForClub(clubName);
     courses.push(course);
     saveLocalCourses();
@@ -300,7 +301,7 @@ function onCancelNewClubBtn_Click() {
 function onAddNewClubBtn_Click() {
     const clubName = newClubNameInput.value.trim();
     const courses = [];
-    courses.push(createNewCourse(clubName));
+    courses.push(createNewCourse(clubName, clubName));
     addLocalClub(clubName, courses);
     renderClub(clubName, courses[0].id);
 
@@ -336,12 +337,12 @@ function onAddNewTeeBtn_Click() {
     document.body.style.overflow = '';
 }
 
-function createNewCourse(clubName) {
+function createNewCourse(clubName, courseName) {
     const newId = 100000 + getLocalCourses().length + 1;
     return {
         id: newId,
         club_name: clubName,
-        course_name: clubName,
+        course_name: courseName,
         location: {
             address: '',
             city: '',
