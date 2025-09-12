@@ -80,6 +80,7 @@ function renderClub(clubName, courseId) {
     // Having selected the club, render the rest of the page
     renderCoursesTable(courseId);
     renderTeesTable('male');
+    renderButtons();
 }
 
 function renderCoursesTable(courseId) {
@@ -119,7 +120,6 @@ function renderTeesTable(gender) {
     const clubName = clubSelect.value;
     const isLocal = isLocalClub(clubName);
 
-
     // Set gender radio button
     const genderRadio = document.querySelector('input[name="courses-gender"][value="' + gender + '"]');
     if (genderRadio) genderRadio.checked = true;
@@ -144,6 +144,13 @@ function renderTeesTable(gender) {
         row.querySelector('.icon-cell img[alt="Remove"]').style.display = isLocal ? '' : 'none';
 
     });
+}
+
+function renderButtons() {
+    const clubName = clubSelect.value;
+    const isLocal = isLocalClub(clubName);
+    deleteBtn.textContent = isLocal ? 'Delete' : 'Edit';
+
 }
 
 function onClubSelect_Change() {
