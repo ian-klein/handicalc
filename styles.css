@@ -538,7 +538,7 @@ body.centered {
 .tee-modal-content {
   background: var(--surface);
   border-radius: var(--radius-outer);
-  width: 50vw;
+  width: 70vw;
   height: 30vh;
   max-width: 800px;
   display: flex;
@@ -605,7 +605,7 @@ body.centered {
 }
 
 .modal-actions .btn {
-  min-width: 8rem;
+  min-width: 6.4rem;
   text-align: center;
   justify-content: center;
 }
