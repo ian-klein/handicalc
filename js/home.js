@@ -391,6 +391,7 @@ function onClubInput_Change() {
 
 function onClubClear_Click() {
   selectClub(null);
+  clubInput.focus();
 }
 
 function onFormatSelect_Change() {
