@@ -75,11 +75,11 @@ export function calculatePH(fmt, rows) {
       a.ph = th;
       b.ph = th;
 
-      let msg = a.msg + `TH\t= 50% of (${a.ch.toFixed(4)} + ${b.ch.toFixed(4)})\n`;
+      let msg = `TH\t= 50% of (${a.ch.toFixed(4)} + ${b.ch.toFixed(4)})\n`;
       msg += `\t= ${th.toFixed(4)}\n`;
       msg += `\t= ${Math.round(th)}`;
-      a.msg = msg;
-      b.msg = msg;
+      a.msg += msg;
+      b.msg += msg;
     }
     return;
   }
@@ -99,11 +99,11 @@ export function calculatePH(fmt, rows) {
       a.ph = th;
       b.ph = th;
 
-      let msg = a.msg + `TH\t= 60% of ${lo.toFixed(4)} + 40% of ${hi.toFixed(4)}\n`;
+      let msg = `TH\t= 60% of ${lo.toFixed(4)} + 40% of ${hi.toFixed(4)}\n`;
       msg += `\t= ${th.toFixed(4)}\n`;
       msg += `\t= ${Math.round(th)}`;
-      a.msg = msg;
-      b.msg = msg;
+      a.msg += msg;
+      b.msg += msg;
     }
     return;
   }
@@ -121,10 +121,9 @@ export function calculatePH(fmt, rows) {
       if (Math.abs(a.ch - b.ch) < 1e-4) {
         a.ph = 0;
         b.ph = 0;
-        let msg = a.msg + `PH\t= 0 (equal CH)`;
-        a.msg = msg;
-        msg = b.msg + `PH\t= 0 (equal CH)`;
-        b.msg = msg;
+        let msg = `PH\t= 0 (equal CH)`;
+        a.msg += msg;
+        b.msg += msg;
       }
       else if (a.ch < b.ch) {
         a.ph = 0;
@@ -203,33 +202,33 @@ export function calculatePH(fmt, rows) {
       rows[3].ph = 0.5 * (t2 - t1);
 
       let msg = `TH\t= 0 (lowest sum of CH)`;
-      rows[0].msg = rows[0].msg + msg;
-      rows[1].msg = rows[1].msg + msg;
+      rows[0].msg += msg;
+      rows[1].msg += msg;
 
-      msg = `TH\t= 50% of ( (${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}) - (${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}))\n`;
+      msg = `TH\t= 50% of ((${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}) - (${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}))\n`;
       msg += `\t= 50% of (${t2.toFixed(4)} - ${t1.toFixed(4)})\n`;
       msg += `\t= 50% of ${(t2 - t1).toFixed(4)}\n`;
       msg += `\t= ${rows[2].ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(rows[2].ph)}`;
-      rows[2].msg = rows[2].msg + msg;
-      rows[3].msg = rows[3].msg + msg;
+      rows[2].msg += msg;
+      rows[3].msg += msg;
     } else { // t1 > t2
       rows[0].ph = 0.5 * (t1 - t2);
       rows[1].ph = 0.5 * (t1 - t2);
       rows[2].ph = 0;
       rows[3].ph = 0;
 
-      let msg = `TH\t= 50% of ( (${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}) - (${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}))\n`;
+      let msg = `TH\t= 50% of ((${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}) - (${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}))\n`;
       msg += `\t= 50% of (${t1.toFixed(4)} - ${t2.toFixed(4)})\n`;
       msg += `\t= 50% of ${(t1 - t2).toFixed(4)}\n`;
       msg += `\t= ${rows[0].ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(rows[0].ph)}`;
-      rows[0].msg = rows[0].msg + msg;
-      rows[1].msg = rows[1].msg + msg;
+      rows[0].msg += msg;
+      rows[1].msg += msg;
 
       msg = `TH\t= 0 (lowest sum of CH)`;
-      rows[2].msg = rows[2].msg + msg;
-      rows[3].msg = rows[3].msg + msg;
+      rows[2].msg += msg;
+      rows[3].msg += msg;
     }
     return;
   }

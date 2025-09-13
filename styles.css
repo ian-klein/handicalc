@@ -290,7 +290,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   text-align: right;
   padding-right: 0.4vh;
 }
-.players-table .ph-value { display: inline-block; width: 60%; text-align: right; }
+.players-table .ph-value { display: inline-block; width: 60%; text-align: right; cursor: pointer;}
 .segment { background: transparent; border: 0; padding: 0.8vh 1.4vh; color: var(--text); }
 .segment.active { background: var(--border); color: var(--text); }
 
