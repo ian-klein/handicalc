@@ -147,11 +147,15 @@ function renderTeesTable(gender) {
 }
 
 function renderButtons() {
+
     const clubName = clubSelect.value;
     const isLocal = isLocalClub(clubName);
     deleteBtn.textContent = isLocal ? 'Delete' : 'Edit';
 
-}
+    document.querySelectorAll('.icon-cell img[alt="Add"]').forEach(btn => {
+        btn.style.display = isLocal ? '' : 'none';
+      });
+  }
 
 function onClubSelect_Change() {
     renderCoursesTable();

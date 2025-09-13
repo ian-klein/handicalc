@@ -22,7 +22,10 @@ let playerList = null;
 function loadPlayers() {
     try {
         const raw = localStorage.getItem(PLAYERS_STORAGE_KEY);
-        if (!raw) return;
+        if (!raw) {
+            playerList = [];
+            return;
+        }
 
         const parsed = JSON.parse(raw);
 

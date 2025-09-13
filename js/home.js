@@ -4,7 +4,7 @@
 import { getCourse, findClubs, getCoursesForClub } from "./course-data.js";  
 import { clearNode, optionFor } from "./uilib.js"
 import { getPlayer, getPlayers, savePlayers } from "./players.js";
-import { computeCH, calculatePH } from "./handicap.js";
+import { computeCH, calculatePH, messageForCH } from "./handicap.js";
 
 // Local storage key for the home state
 const HOME_STORAGE_KEY = 'home_state_v1';
@@ -82,6 +82,7 @@ export function wireHomeEvents() {
   for (const row of rows) {
     row.select.addEventListener('change', onPlayerSel_Change);
     row.hiInput.addEventListener('change', onPlayerHiInput_Change);
+    row.phSpan.addEventListener('click', onPlayerPhSpan_Click);
   }
 }
 
@@ -252,10 +253,25 @@ function getHomePlayers() {
 }
 
 function recalcPHAll() {
+  const rows = calculateAllPH();
+
+  // Update the PH display
+  for (const row of rows)
+  {
+    if (row.ph || row.ph === 0) {
+      row.phSpan.textContent = String(Math.round(row.ph));
+    }
+    else {
+      row.phSpan.textContent = '';
+    }
+  }
+}
+
+function calculateAllPH() {
   const rows = getHomePlayerRows();
   
   const course = getCourse(homeState.selectedCourseId, homeState.selectedClub);
-  if (!course) return;
+  if (!course) return rows;
 
   const fmt = formatSelect ? formatSelect.value : 'General play';
 
@@ -265,7 +281,7 @@ function recalcPHAll() {
   const maleTee = maleTees.find(t => t.tee_name === homeState.menTee) || maleTees[0] || null;
   const femaleTee = femaleTees.find(t => t.tee_name === homeState.ladiesTee) || femaleTees[0] || null;
 
-  //C ompute the course handicap for each player
+  //Compute the course handicap for each player
   rows.forEach(r => {
     const player = getPlayer(r.select.value);
     if (player && player !== '') {
@@ -273,6 +289,7 @@ function recalcPHAll() {
       r.gender = player.gender;
       const tee = r.gender === 'M' ? maleTee : femaleTee;
       r.ch = computeCH(hi, tee?.slope_rating, tee?.course_rating, tee?.par_total);
+      r.msg = messageForCH(player, tee);
     }
     else {
       r.ch = null;
@@ -283,19 +300,7 @@ function recalcPHAll() {
   //Compute the playing handicap for each player
   calculatePH(fmt, rows);
 
-  // Update the PH display
-  for (const row of rows)
-  {
-    if (row.phSpan) {
-      if (row.ph)
-      {
-        row.phSpan.textContent = String(Math.round(row.ph));
-      }
-      else {
-        row.phSpan.textContent = '';
-      }
-    }
-  }
+  return rows;
 }
 
 function updateMaleTees(tees) {
@@ -333,7 +338,7 @@ function onClubInput_Input() {
   // If we have a selected club and the input is being changed, revert it
   // This discards additional characters that were typed afterwards
   const selectedClubName = homeState.selectedClub;
-  if (selectedClubName.length > 0 && clubInput.value.trim() !== selectedClubName) {
+  if (selectedClubName && selectedClubName.length > 0 && clubInput.value.trim() !== selectedClubName) {
     clubInput.value = selectedClubName;
     return;
   }
@@ -345,7 +350,7 @@ function onClubInput_Input() {
     selectClub(clubs[0]);
     return;
   }
- 
+  
   // Show suggestions only if we have at least 3 characters
   if (prefix.length < 3) {
     clubSuggest.hidden = true;
@@ -468,4 +473,18 @@ function onPlayerHiInput_Change(e) {
   saveHomeState();
   recalcPHAll();
 }
+
+function onPlayerPhSpan_Click(e) {
+  const target = e.target;
+
+  const row = target.closest('tr');
+  if (!row) return;
+
+  const idx = parseInt(row.dataset.index, 10);
+  const rows = calculateAllPH();
+
+  const msg = rows[idx].msg;
+  alert(msg);
+}
+
 
