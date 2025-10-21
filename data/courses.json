@@ -730,10 +730,10 @@
             "tee_name": "Yellow",
             "course_rating": 75.5,
             "slope_rating": 132,
-            "par_total": 74
+            "par_total": 72
           },
           {
-            "tee_name": "Red 2019",
+            "tee_name": "Red",
             "course_rating": 72,
             "slope_rating": 125,
             "par_total": 72
@@ -744,19 +744,19 @@
             "tee_name": "White",
             "course_rating": 71.7,
             "slope_rating": 122,
-            "par_total": 71
+            "par_total": 72
           },
           {
             "tee_name": "Yellow",
             "course_rating": 69.8,
             "slope_rating": 121,
-            "par_total": 71
+            "par_total": 72
           },
           {
-            "tee_name": "Red 2019",
+            "tee_name": "Red",
             "course_rating": 66.7,
             "slope_rating": 115,
-            "par_total": 71
+            "par_total": 72
           }
         ]
       }
@@ -40277,30 +40277,36 @@
       "tees": {
         "female": [
           {
+            "tee_name": "Yellow",
+            "course_rating": 75.7,
+            "slope_rating": 133,
+            "par_total": 72
+          },
+          {
             "tee_name": "Red",
             "course_rating": 72.5,
-            "slope_rating": 129,
+            "slope_rating": 127,
             "par_total": 72
           }
         ],
         "male": [
           {
             "tee_name": "White",
-            "course_rating": 71.9,
-            "slope_rating": 133,
-            "par_total": 71
-          },
-          {
-            "tee_name": "Yellow",
-            "course_rating": 70.2,
+            "course_rating": 71.5,
             "slope_rating": 128,
             "par_total": 71
           },
           {
+            "tee_name": "Yellow",
+            "course_rating": 70.1,
+            "slope_rating": 123,
+            "par_total": 71
+          },
+          {
             "tee_name": "Red",
-            "course_rating": 67.5,
-            "slope_rating": 122,
-            "par_total": 68
+            "course_rating": 67.7,
+            "slope_rating": 113,
+            "par_total": 71
           }
         ]
       }
@@ -68482,19 +68488,19 @@
         "female": [
           {
             "tee_name": "White - Women",
-            "course_rating": 75.3,
+            "course_rating": 75.5,
             "slope_rating": 132,
             "par_total": 72
           },
           {
             "tee_name": "Yellow - Women",
-            "course_rating": 74.1,
-            "slope_rating": 131,
+            "course_rating": 74.5,
+            "slope_rating": 129,
             "par_total": 72
           },
           {
             "tee_name": "Red 2017",
-            "course_rating": 72.2,
+            "course_rating": 72.5,
             "slope_rating": 126,
             "par_total": 72
           }
@@ -68502,19 +68508,19 @@
         "male": [
           {
             "tee_name": "White",
-            "course_rating": 70,
+            "course_rating": 69.7,
             "slope_rating": 128,
             "par_total": 70
           },
           {
             "tee_name": "Yellow",
-            "course_rating": 68.8,
+            "course_rating": 68.7,
             "slope_rating": 125,
             "par_total": 70
           },
           {
             "tee_name": "Red - Men",
-            "course_rating": 66.9,
+            "course_rating": 67.5,
             "slope_rating": 118,
             "par_total": 70
           }
