@@ -84,27 +84,8 @@ export function calculatePH(fmt, rows) {
     return;
   }
   if (fmt === 'Greensomes') {
-    // Pairs: (0,1), (2,3)
-    for (let i = 0; i < rows.length; i += 2) {
-      const a = rows[i];
-      const b = rows[i + 1];
-      if (a.ch == null || b.ch == null) {
-        a.ph = null; 
-        b.ph = null;
-        continue;
-      }
-      const lo = Math.min(a.ch, b.ch);
-      const hi = Math.max(a.ch, b.ch);
-      const th = 0.6 * lo + 0.4 * hi;
-      a.ph = th;
-      b.ph = th;
-
-      let msg = `TH\t= 60% of ${lo.toFixed(4)} + 40% of ${hi.toFixed(4)}\n`;
-      msg += `\t= ${th.toFixed(4)}\n`;
-      msg += `\t= ${Math.round(th)}`;
-      a.msg += msg;
-      b.msg += msg;
-    }
+    calcTH(rows.slice(0, 2), [60, 40]);
+    calcTH(rows.slice(2, 4), [60, 40]);
     return;
   }
   if (fmt === '2B match-play') {
@@ -232,4 +213,56 @@ export function calculatePH(fmt, rows) {
     }
     return;
   }
+  if (fmt === '2B scramble') {
+    calcTH(rows.slice(0, 2), [35, 15]);
+    calcTH(rows.slice(2, 4), [35, 15]);
+    return;
+  }
+  if (fmt === '3B scramble') {
+    calcTH(rows.slice(0,3), [30, 20, 10]);
+    return;
+  }
+  if (fmt === '4B scramble') {
+    calcTH(rows, [25, 20, 15, 10]);
+    return;
+  }
 }
+
+//For greensomes & scramble - weights are an array of percentages in descending order
+function calcTH(rows, weights) {
+  //If any CH is null, forget it
+  if (rows.some(row => row.ch == null)) {
+    rows.forEach(row => row.ph = null);
+    return;
+  }
+
+  //Sort the CHs into ascending order
+  const chs = rows.map(row => row.ch).sort((a, b) => a - b);
+  let th = 0;
+  chs.forEach((ch, i) => { th += weights[i] * ch / 100; });
+
+  //Format the message
+  let msg = 'TH\t= ';
+  for (let i = 0; i < chs.length; i++) {
+    if (i > 0) msg += ' + ';
+    if (i === 2) msg += '\n\t   ';
+    msg += `${weights[i]}% of ${chs[i].toFixed(4)}`;
+  }
+  msg += '\n\t= ';
+
+  for (let i = 0; i < chs.length; i++) {
+    if (i > 0) msg += ' + ';
+    msg += `${(weights[i] * chs[i] / 100).toFixed(4)}`;
+  }
+  msg += '\n';
+
+  msg += `\t= ${th.toFixed(4)}\n`;
+  msg += `\t= ${Math.round(th)}`;
+
+  //Update the rows
+  for (const row of rows) {
+    row.ph = th;
+    row.msg += msg;
+  }
+}
+  

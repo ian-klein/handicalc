@@ -46,11 +46,14 @@ const formatText = {
   'General play': 'Each player gets 100% of their course handicap',
   'Individual': 'Each player gets 95% of their course handicap',
   '4B better-ball': 'Each player gets 85% of their course handicap',
-  'Foursomes': 'Team handicap is the sum of 50% of the course handicap for each player',
-  'Greensomes': 'Team handicap is the sum of 60% course handicap for the lower plus 40% course handicap for the higher',
+  'Foursomes': 'Team handicap is the sum of 50% of the course handicap of each player',
+  'Greensomes': 'Team handicap is the sum of 60% course handicap of the lower handicap and 40% of the higher',
   '2B match-play': 'The highest handicapped player gets 100% of the difference in course handicaps',
   '4B match-play': 'Each player gets 90% of the difference between their course handicap and the course handicap of the lowest handicapped player',
-  'Foursomes match-play': 'Team handicap is 50% of the difference in the sum of the course handicaps for each player in the team'
+  'Foursomes match-play': 'Team handicap is 50% of the difference in the sum of the course handicaps of each player in the team',
+  '2B scramble' : 'Team handicaap is the sum of 35% course handicap of the lower handicap and 15% of the higher',
+  '3B scramble' : 'Team handicaap is the sum of 30% course handicap of the lowest handicap, 20% of the middle, and 10% of the highest',
+  '4B scramble' : 'Team handicaap is the sum of 25% course handicap of the lowest handicap, 20% of the next lowest, 15% of the second highest, and 10% of the highest'
 };
 
 export function wireHomeEvents() {
