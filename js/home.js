@@ -262,7 +262,7 @@ function recalcPHAll() {
   for (const row of rows)
   {
     if (row.ph || row.ph === 0) {
-      row.phSpan.textContent = String(Math.round(row.ph));
+      row.phSpan.textContent = String(row.ph);
     }
     else {
       row.phSpan.textContent = '';

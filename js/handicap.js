@@ -27,7 +27,7 @@ export function calculatePH(fmt, rows) {
       let msg = r.msg + `PH\t= ${r.ch.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
-            
+      r.ph = Math.round(r.ph);      
     }
     return;
   }
@@ -43,6 +43,7 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${r.ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
+      r.ph = Math.round(r.ph);      
     }
     return;
   }
@@ -58,6 +59,7 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${r.ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
+      r.ph = Math.round(r.ph);      
     }
     return;
   }
@@ -80,12 +82,14 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${Math.round(th)}`;
       a.msg += msg;
       b.msg += msg;
+      a.ph = Math.round(a.ph);
+      b.ph = Math.round(b.ph);      
     }
     return;
   }
   if (fmt === 'Greensomes') {
-    calcTH(rows.slice(0, 2), [60, 40]);
-    calcTH(rows.slice(2, 4), [60, 40]);
+    calcTH(rows.slice(0, 2), [60, 40], 0);
+    calcTH(rows.slice(2, 4), [60, 40], 0);
     return;
   }
   if (fmt === '2B match-play') {
@@ -116,6 +120,7 @@ export function calculatePH(fmt, rows) {
         msg += `\t= ${b.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(b.ph)}`;
         b.msg = msg;
+        b.ph = Math.round(b.ph);      
       } else { // a.ch > b.ch
         b.ph = 0;
         let msg = b.msg + `PH\t= 0 (lowest CH)`;
@@ -126,6 +131,7 @@ export function calculatePH(fmt, rows) {
         msg += `\t= ${a.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(a.ph)}`;
         a.msg = msg;
+        a.ph = Math.round(a.ph);      
       }
     }
     return;
@@ -152,6 +158,7 @@ export function calculatePH(fmt, rows) {
         msg += `\t= ${r.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(r.ph)}`;
         r.msg = msg;
+        r.ph = Math.round(r.ph);      
       }
     });
     return;
@@ -193,6 +200,8 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${Math.round(rows[2].ph)}`;
       rows[2].msg += msg;
       rows[3].msg += msg;
+      rows[2].ph = Math.round(rows[2].ph);
+      rows[3].ph = Math.round(rows[3].ph);      
     } else { // t1 > t2
       rows[0].ph = 0.5 * (t1 - t2);
       rows[1].ph = 0.5 * (t1 - t2);
@@ -206,6 +215,8 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${Math.round(rows[0].ph)}`;
       rows[0].msg += msg;
       rows[1].msg += msg;
+      rows[0].ph = Math.round(rows[0].ph);
+      rows[1].ph = Math.round(rows[1].ph);      
 
       msg = `TH\t= 0 (lowest sum of CH)`;
       rows[2].msg += msg;
@@ -214,22 +225,22 @@ export function calculatePH(fmt, rows) {
     return;
   }
   if (fmt === '2B scramble') {
-    calcTH(rows.slice(0, 2), [35, 15]);
-    calcTH(rows.slice(2, 4), [35, 15]);
+    calcTH(rows.slice(0, 2), [35, 15], 1);
+    calcTH(rows.slice(2, 4), [35, 15], 1);
     return;
   }
   if (fmt === '3B scramble') {
-    calcTH(rows.slice(0,3), [30, 20, 10]);
+    calcTH(rows.slice(0,3), [30, 20, 10], 1);
     return;
   }
   if (fmt === '4B scramble') {
-    calcTH(rows, [25, 20, 15, 10]);
+    calcTH(rows, [25, 20, 15, 10], 1);
     return;
   }
 }
 
 //For greensomes & scramble - weights are an array of percentages in descending order
-function calcTH(rows, weights) {
+function calcTH(rows, weights, decimals) {
   //If any CH is null, forget it
   if (rows.some(row => row.ch == null)) {
     rows.forEach(row => row.ph = null);
@@ -257,11 +268,11 @@ function calcTH(rows, weights) {
   msg += '\n';
 
   msg += `\t= ${th.toFixed(4)}\n`;
-  msg += `\t= ${Math.round(th)}`;
+  msg += `\t= ${th.toFixed(decimals)}`;
 
   //Update the rows
   for (const row of rows) {
-    row.ph = th;
+    row.ph = th.toFixed(decimals);
     row.msg += msg;
   }
 }
