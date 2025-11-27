@@ -641,3 +641,12 @@ body.centered {
 .modal[hidden] {
   display: none;
 }
+
+.help-frame {
+  width: 98vw;
+  height: 70vh;
+  border: none;
+  margin-left: auto;
+  margin-right: auto;
+}
+

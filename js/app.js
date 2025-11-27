@@ -38,47 +38,8 @@ function wireHelpButtons() {
 }
 
 function showHelp(section = '') {
-  const helpUrl = 'help.html' + (section ? `#${section}` : '');
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
-  try {
-    // On mobile, we'll force a new tab each time for better reliability
-    if (isMobile) {
-      helpTab = window.open(helpUrl, '_blank');
-      if (helpTab) {
-        // Store the tab ID in localStorage when opened
-        localStorage.setItem(HELP_TAB_KEY, helpTabId);
-        // Set up a message channel for communication
-        const channel = new BroadcastChannel('handicalc_help');
-        channel.postMessage({ type: 'NAVIGATE', url: helpUrl });
-      }
-      return false;
-    }
-    
-    // Desktop behavior
-    if (helpTab && !helpTab.closed) {
-      helpTab.location.href = helpUrl;
-      helpTab.focus();
-      return false;
-    }
-    
-    // Open new help tab with unique name
-    const tabName = `handicalc_help_${Date.now()}`;
-    helpTab = window.open(helpUrl, tabName, 'noopener,noreferrer');
-    
-    if (helpTab) {
-      helpTab.focus();
-    } else {
-      window.open(helpUrl, '_blank');
-    }
-    
-  } catch (e) {
-    console.error('Error managing help tab:', e);
-    window.open(helpUrl, '_blank');
-  }
-  return false;
+  showPage('help'); //Ignore the section, it is not really needed. User can scroll!
 }
-
 
 function showPage(id) {
   if (id === currentPage) return;
