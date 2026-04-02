@@ -2,8 +2,8 @@
 'use strict';
 
 export function computeCH(hi, slope, rating, par) {
-    if (hi == null || slope == null || rating == null || par == null) return null;
-    return (slope / 113) * hi + (rating - par);
+  if (hi == null || slope == null || rating == null || par == null) return null;
+  return (slope / 113) * hi + (rating - par);
 }
 
 export function messageForCH(player, tee) {
@@ -27,7 +27,7 @@ export function calculatePH(fmt, rows) {
       let msg = r.msg + `PH\t= ${r.ch.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
-      r.ph = Math.round(r.ph);      
+      r.ph = Math.round(r.ph);
     }
     return;
   }
@@ -43,7 +43,7 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${r.ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
-      r.ph = Math.round(r.ph);      
+      r.ph = Math.round(r.ph);
     }
     return;
   }
@@ -59,7 +59,7 @@ export function calculatePH(fmt, rows) {
       msg += `\t= ${r.ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(r.ph)}`;
       r.msg = msg;
-      r.ph = Math.round(r.ph);      
+      r.ph = Math.round(r.ph);
     }
     return;
   }
@@ -69,7 +69,7 @@ export function calculatePH(fmt, rows) {
       const a = rows[i];
       const b = rows[i + 1];
       if (a.ch == null || b.ch == null) {
-        a.ph = null; 
+        a.ph = null;
         b.ph = null;
         continue;
       }
@@ -83,7 +83,7 @@ export function calculatePH(fmt, rows) {
       a.msg += msg;
       b.msg += msg;
       a.ph = Math.round(a.ph);
-      b.ph = Math.round(b.ph);      
+      b.ph = Math.round(b.ph);
     }
     return;
   }
@@ -98,7 +98,7 @@ export function calculatePH(fmt, rows) {
       const a = rows[i];
       const b = rows[i + 1];
       if (a.ch == null || b.ch == null) {
-        a.ph = null; 
+        a.ph = null;
         b.ph = null;
         continue;
       }
@@ -120,7 +120,7 @@ export function calculatePH(fmt, rows) {
         msg += `\t= ${b.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(b.ph)}`;
         b.msg = msg;
-        b.ph = Math.round(b.ph);      
+        b.ph = Math.round(b.ph);
       } else { // a.ch > b.ch
         b.ph = 0;
         let msg = b.msg + `PH\t= 0 (lowest CH)`;
@@ -131,34 +131,37 @@ export function calculatePH(fmt, rows) {
         msg += `\t= ${a.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(a.ph)}`;
         a.msg = msg;
-        a.ph = Math.round(a.ph);      
+        a.ph = Math.round(a.ph);
       }
     }
     return;
   }
   if (fmt === '4B match-play') {
     // Consider all rows with CH; lowest gets 0, others get 0.9 * (CH - min)
+    // Use rounded CH for all calculations
     const valid = rows.filter(r => r.ch != null);
     if (valid.length === 0) { rows.forEach(r => r.ph = null); return; }
-    const minCH = Math.min(...valid.map(r => r.ch));
+    const minCH = Math.round(Math.min(...valid.map(r => r.ch)));
     rows.forEach(r => {
       if (r.ch == null) {
-        r.ph = null; 
+        r.ph = null;
         return;
       }
 
-      if (Math.abs(r.ch - minCH) < 1e-4) { 
-        r.ph = 0; 
+      const ch = Math.round(r.ch);
+      r.msg += `\t= ${ch} (rounded)\n`;
+      if (ch === minCH) {
+        r.ph = 0;
         let msg = r.msg + `PH\t= 0 (lowest CH)`;
         r.msg = msg;
       }
-      else { 
-        r.ph = 0.9 * (r.ch - minCH);
-        let msg = r.msg + `PH\t= 90% of (${r.ch.toFixed(4)} - ${minCH.toFixed(4)})\n`;
+      else {
+        r.ph = 0.9 * (ch - minCH);
+        let msg = r.msg + `PH\t= 90% of (${ch} - ${minCH})\n`;
         msg += `\t= ${r.ph.toFixed(4)}\n`;
         msg += `\t= ${Math.round(r.ph)}`;
         r.msg = msg;
-        r.ph = Math.round(r.ph);      
+        r.ph = Math.round(r.ph);
       }
     });
     return;
@@ -168,10 +171,14 @@ export function calculatePH(fmt, rows) {
     const valid = rows.filter(r => r.ch != null);
     if (valid.length < 4) { rows.forEach(r => r.ph = null); return; }
 
-    const t1 = rows[0].ch + rows[1].ch;
-    const t2 = rows[2].ch + rows[3].ch;
-    
-    if (Math.abs(t1 - t2) < 1e-4) {
+    rows.forEach(r => r.msg += `\t= ${Math.round(r.ch)} (rounded)\n`);
+
+    const roundedCH = rows.map(r => Math.round(r.ch));
+
+    const t1 = roundedCH[0] + roundedCH[1];
+    const t2 = roundedCH[2] + roundedCH[3];
+
+    if (t1 === t2) {
       rows[0].ph = 0;
       rows[1].ph = 0;
       rows[2].ph = 0;
@@ -193,30 +200,30 @@ export function calculatePH(fmt, rows) {
       rows[0].msg += msg;
       rows[1].msg += msg;
 
-      msg = `TH\t= 50% of ((${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}) - (${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}))\n`;
-      msg += `\t= 50% of (${t2.toFixed(4)} - ${t1.toFixed(4)})\n`;
-      msg += `\t= 50% of ${(t2 - t1).toFixed(4)}\n`;
+      msg = `TH\t= 50% of ((${roundedCH[2]} + ${roundedCH[3]}) - (${roundedCH[0]} + ${roundedCH[1]}))\n`;
+      msg += `\t= 50% of (${t2} - ${t1})\n`;
+      msg += `\t= 50% of ${(t2 - t1)}\n`;
       msg += `\t= ${rows[2].ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(rows[2].ph)}`;
       rows[2].msg += msg;
       rows[3].msg += msg;
       rows[2].ph = Math.round(rows[2].ph);
-      rows[3].ph = Math.round(rows[3].ph);      
+      rows[3].ph = Math.round(rows[3].ph);
     } else { // t1 > t2
       rows[0].ph = 0.5 * (t1 - t2);
       rows[1].ph = 0.5 * (t1 - t2);
       rows[2].ph = 0;
       rows[3].ph = 0;
 
-      let msg = `TH\t= 50% of ((${rows[0].ch.toFixed(4)} + ${rows[1].ch.toFixed(4)}) - (${rows[2].ch.toFixed(4)} + ${rows[3].ch.toFixed(4)}))\n`;
-      msg += `\t= 50% of (${t1.toFixed(4)} - ${t2.toFixed(4)})\n`;
-      msg += `\t= 50% of ${(t1 - t2).toFixed(4)}\n`;
+      let msg = `TH\t= 50% of ((${roundedCH[0]} + ${roundedCH[1]}) - (${roundedCH[2]} + ${roundedCH[3]}))\n`;
+      msg += `\t= 50% of (${t1} - ${t2})\n`;
+      msg += `\t= 50% of ${(t1 - t2)}\n`;
       msg += `\t= ${rows[0].ph.toFixed(4)}\n`;
       msg += `\t= ${Math.round(rows[0].ph)}`;
       rows[0].msg += msg;
       rows[1].msg += msg;
       rows[0].ph = Math.round(rows[0].ph);
-      rows[1].ph = Math.round(rows[1].ph);      
+      rows[1].ph = Math.round(rows[1].ph);
 
       msg = `TH\t= 0 (lowest sum of CH)`;
       rows[2].msg += msg;
@@ -230,7 +237,7 @@ export function calculatePH(fmt, rows) {
     return;
   }
   if (fmt === '3B scramble') {
-    calcTH(rows.slice(0,3), [30, 20, 10], 1);
+    calcTH(rows.slice(0, 3), [30, 20, 10], 1);
     return;
   }
   if (fmt === '4B scramble') {
@@ -276,4 +283,4 @@ function calcTH(rows, weights, decimals) {
     row.msg += msg;
   }
 }
-  
+
