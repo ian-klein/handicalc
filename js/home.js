@@ -429,7 +429,7 @@ function onLadiesTeeSel_Change() {
   saveHomeState();
 
   const course = getCourse(homeState.selectedCourseId, homeState.selectedClub);
-  updateFemaleTees(course?.tees?.male || []);
+  updateFemaleTees(course?.tees?.female || []);
   recalcPHAll();
 }
 
